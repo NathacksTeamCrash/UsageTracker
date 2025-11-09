@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -41,27 +42,10 @@ public class LoginActivity extends AppCompatActivity {
         testLoginButton = findViewById(R.id.testLoginButton);
         registerTextView = findViewById(R.id.registerTextView);
 
-        // Check if user is already logged in (only check Firebase, not test mode)
-        // FirebaseUser currentUser = auth.getCurrentUser();
-        // if (currentUser != null) {
-        //     navigateToDashboard(currentUser.getUid(), false);
-        //     return;
-        // }
-
-        // Check for test mode
-        // SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        // if (prefs.getBoolean(KEY_TEST_MODE, false)) {
-        //     String testUserId = prefs.getString(KEY_TEST_USER_ID, null);
-        //     if (testUserId != null) {
-        //         navigateToDashboard(testUserId, true);
-        //         return;
-        //     }
-        // }
-
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         loginButton.setOnClickListener(v -> loginUser());
-        
+
         testLoginButton.setOnClickListener(v -> useTestLogin());
 
         registerTextView.setOnClickListener(v -> {
@@ -74,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
         // Create a test user without Firebase
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        
+
         String testUserId = "test_user_" + System.currentTimeMillis();
         editor.putBoolean(KEY_TEST_MODE, true);
         editor.putString(KEY_TEST_USER_ID, testUserId);
@@ -88,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
         testUser.setHasCompletedQuestionnaire(true);
         testUser.setPreviousMonthWaterUsage(5000);
         testUser.setPreviousMonthElectricityUsage(300);
-        
+
         // Save to Firestore in background
         firebaseHelper.saveUser(testUser, task -> {
             // Don't wait for this to complete
@@ -155,35 +139,70 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToDashboard(String userId, boolean isTestMode) {
-        // Check if user has completed setup (setupComplete flag)
+        Log.d("LoginActivity", "========================================");
+        Log.d("LoginActivity", "navigateToDashboard called");
+        Log.d("LoginActivity", "userId: " + userId);
+        Log.d("LoginActivity", "isTestMode: " + isTestMode);
+        Log.d("LoginActivity", "========================================");
+
         FirebaseHelper firebaseHelper = new FirebaseHelper();
         firebaseHelper.getUser(userId, task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
-                com.example.usagetracker.models.User user = firebaseHelper.documentToUser(task.getResult());
+                Log.d("LoginActivity", "✓ User document EXISTS in Firestore");
+
+                DocumentSnapshot document = task.getResult();
+
+                // Log all fields in the document
+                Log.d("LoginActivity", "Document data: " + document.getData());
+
+                User user = firebaseHelper.documentToUser(document);
                 boolean setupComplete = false;
+
                 if (user != null) {
-                    // Try to get setupComplete from user model, fallback to hasCompletedQuestionnaire if not present
+                    Log.d("LoginActivity", "✓ User object created successfully");
+                    Log.d("LoginActivity", "User name: " + user.getName());
+                    Log.d("LoginActivity", "User email: " + user.getEmail());
+
+                    // Check directly from document first
+                    if (document.contains("setupComplete")) {
+                        setupComplete = document.getBoolean("setupComplete") != null && document.getBoolean("setupComplete");
+                        Log.d("LoginActivity", "setupComplete from document: " + setupComplete);
+                    } else {
+                        Log.d("LoginActivity", "⚠ Document does NOT contain 'setupComplete' field");
+                    }
+
+                    // Also try reflection
                     try {
-                        // If User has getSetupComplete(), use it; else fallback
                         java.lang.reflect.Method getSetupCompleteMethod = user.getClass().getMethod("getSetupComplete");
                         Object setupCompleteObj = getSetupCompleteMethod.invoke(user);
                         if (setupCompleteObj instanceof Boolean) {
-                            setupComplete = (Boolean) setupCompleteObj;
+                            boolean fromGetter = (Boolean) setupCompleteObj;
+                            Log.d("LoginActivity", "setupComplete from getSetupComplete(): " + fromGetter);
+                            setupComplete = fromGetter; // Use this value
                         }
                     } catch (Exception e) {
-                        // Fallback for legacy users
+                        Log.e("LoginActivity", "⚠ Reflection failed (method doesn't exist or error)", e);
+                        // Fallback to hasCompletedQuestionnaire
                         setupComplete = user.isHasCompletedQuestionnaire();
+                        Log.d("LoginActivity", "setupComplete from hasCompletedQuestionnaire (fallback): " + setupComplete);
                     }
+                } else {
+                    Log.e("LoginActivity", "✗ User object is NULL!");
                 }
+
+                Log.d("LoginActivity", "========================================");
+                Log.d("LoginActivity", "FINAL setupComplete value: " + setupComplete);
+                Log.d("LoginActivity", "========================================");
+
                 if (!setupComplete) {
-                    // Navigate to questionnaire/setup flow if not complete
+                    Log.d("LoginActivity", "→ Navigating to QuestionnaireWelcomeActivity");
                     Intent intent = new Intent(LoginActivity.this, QuestionnaireWelcomeActivity.class);
                     intent.putExtra("USER_ID", userId);
                     intent.putExtra("IS_NEW_USER", false);
                     startActivity(intent);
                     finish();
                 } else {
-                    // Navigate to dashboard
+                    Log.d("LoginActivity", "→ Navigating to DashboardActivity");
                     Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                     intent.putExtra("USER_ID", userId);
                     intent.putExtra("IS_TEST_MODE", isTestMode);
@@ -191,7 +210,8 @@ public class LoginActivity extends AppCompatActivity {
                     finish();
                 }
             } else {
-                // User doesn't exist, navigate to questionnaire/setup flow
+                Log.d("LoginActivity", "✗ User document DOES NOT EXIST in Firestore");
+                Log.d("LoginActivity", "→ Navigating to QuestionnaireWelcomeActivity");
                 Intent intent = new Intent(LoginActivity.this, QuestionnaireWelcomeActivity.class);
                 intent.putExtra("USER_ID", userId);
                 intent.putExtra("IS_NEW_USER", false);
@@ -201,4 +221,3 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 }
-

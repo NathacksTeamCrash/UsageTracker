@@ -37,7 +37,7 @@ public class FirebaseHelper {
             Log.e(TAG, "Cannot save user: user or userId is null");
             return;
         }
-        
+
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("userId", user.getUserId());
         userMap.put("name", user.getName() != null ? user.getName() : "");
@@ -50,6 +50,7 @@ public class FirebaseHelper {
         userMap.put("ecoPoints", user.getEcoPoints());
         userMap.put("currentStreak", user.getCurrentStreak());
         userMap.put("hasCompletedQuestionnaire", user.isHasCompletedQuestionnaire());
+        userMap.put("setupComplete", user.isSetupComplete()); // ADDED THIS LINE
         userMap.put("lastLoginDate", user.getLastLoginDate());
 
         Log.d(TAG, "Saving user to Firestore: " + user.getUserId());
@@ -173,7 +174,7 @@ public class FirebaseHelper {
         user.setName(document.getString("name"));
         user.setEmail(document.getString("email"));
         user.setHouseholdSize(document.getLong("householdSize") != null ? document.getLong("householdSize").intValue() : 0);
-        
+
         // Safely handle List conversion
         Object appliancesObj = document.get("majorAppliances");
         if (appliancesObj instanceof List) {
@@ -183,10 +184,10 @@ public class FirebaseHelper {
         } else {
             user.setMajorAppliances(new ArrayList<>());
         }
-        
+
         user.setPreviousMonthWaterUsage(document.getDouble("previousMonthWaterUsage") != null ? document.getDouble("previousMonthWaterUsage") : 0.0);
         user.setPreviousMonthElectricityUsage(document.getDouble("previousMonthElectricityUsage") != null ? document.getDouble("previousMonthElectricityUsage") : 0.0);
-        
+
         // Handle selectedGoals list
         Object goalsObj = document.get("selectedGoals");
         if (goalsObj instanceof List) {
@@ -196,10 +197,11 @@ public class FirebaseHelper {
         } else {
             user.setSelectedGoals(new ArrayList<>());
         }
-        
+
         user.setEcoPoints(document.getLong("ecoPoints") != null ? document.getLong("ecoPoints").intValue() : 0);
         user.setCurrentStreak(document.getLong("currentStreak") != null ? document.getLong("currentStreak").intValue() : 0);
         user.setHasCompletedQuestionnaire(document.getBoolean("hasCompletedQuestionnaire") != null ? document.getBoolean("hasCompletedQuestionnaire") : false);
+        user.setSetupComplete(document.getBoolean("setupComplete") != null ? document.getBoolean("setupComplete") : false); // ADDED THIS LINE
         user.setLastLoginDate(document.getLong("lastLoginDate") != null ? document.getLong("lastLoginDate") : 0);
         return user;
     }
@@ -237,4 +239,3 @@ public class FirebaseHelper {
         return db;
     }
 }
-

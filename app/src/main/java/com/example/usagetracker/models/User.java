@@ -14,6 +14,7 @@ public class User {
     private int ecoPoints;
     private int currentStreak;
     private boolean hasCompletedQuestionnaire;
+    private boolean setupComplete; // NEW FIELD
     private long lastLoginDate;
 
     public User() {
@@ -27,6 +28,7 @@ public class User {
         this.ecoPoints = 0;
         this.currentStreak = 0;
         this.hasCompletedQuestionnaire = false;
+        this.setupComplete = false; // Initialize to false
     }
 
     // Getters and Setters
@@ -118,6 +120,19 @@ public class User {
         this.hasCompletedQuestionnaire = hasCompletedQuestionnaire;
     }
 
+    // NEW: setupComplete getter and setter
+    public boolean isSetupComplete() {
+        return setupComplete;
+    }
+
+    public boolean getSetupComplete() {
+        return setupComplete;
+    }
+
+    public void setSetupComplete(boolean setupComplete) {
+        this.setupComplete = setupComplete;
+    }
+
     public long getLastLoginDate() {
         return lastLoginDate;
     }
@@ -126,4 +141,3 @@ public class User {
         this.lastLoginDate = lastLoginDate;
     }
 }
-

@@ -81,7 +81,10 @@ public class ActivitySetupActivity extends AppCompatActivity {
         finishButton = findViewById(R.id.finishButton);
 
         addActivityButton.setOnClickListener(v -> addActivityInput());
-        finishButton.setOnClickListener(v -> saveActivitiesAndFinish());
+        finishButton.setOnClickListener(v -> {
+            Log.d("ActivitySetup", "Finish button clicked!");
+            saveActivitiesAndFinish();
+        });
 
         // Add first activity input by default
         addActivityInput();
@@ -123,6 +126,8 @@ public class ActivitySetupActivity extends AppCompatActivity {
     }
 
     private void saveActivitiesAndFinish() {
+        Log.d("ActivitySetup", "saveActivitiesAndFinish called");
+
         if (activityInputs.isEmpty()) {
             Toast.makeText(this, "Please add at least one activity", Toast.LENGTH_SHORT).show();
             return;
@@ -152,24 +157,37 @@ public class ActivitySetupActivity extends AppCompatActivity {
             }
         }
 
+        Log.d("ActivitySetup", "Created " + goals.size() + " goals, calling saveGoalsToFirestore");
         // Save all goals to Firestore
         saveGoalsToFirestore(goals);
     }
 
     private void saveGoalsToFirestore(List<Goal> goals) {
-        Log.d("ActivitySetup", "Saving " + goals.size() + " goals");
+        Log.d("ActivitySetup", "=== START saveGoalsToFirestore ===");
+        Log.d("ActivitySetup", "Number of goals: " + goals.size());
+
+        if (goals.isEmpty()) {
+            Log.e("ActivitySetup", "No goals to save!");
+            return;
+        }
 
         final int[] savedCount = {0};
         final int[] failedCount = {0};
         final int totalGoals = goals.size();
+
         FirebaseUser firebaseUser = auth.getCurrentUser();
         String uid = (firebaseUser != null) ? firebaseUser.getUid() : userId;
 
-        // Show progress
+        Log.d("ActivitySetup", "Using userId: " + uid);
+
         Toast.makeText(this, "Saving activities...", Toast.LENGTH_SHORT).show();
 
-        for (Goal goal : goals) {
-            // Prepare activity data
+        for (int i = 0; i < goals.size(); i++) {
+            Goal goal = goals.get(i);
+            final int goalIndex = i;
+
+            Log.d("ActivitySetup", "Preparing to save goal " + (i+1) + ": " + goal.getActivityName());
+
             java.util.HashMap<String, Object> activityData = new java.util.HashMap<>();
             activityData.put("activityName", goal.getActivityName());
             activityData.put("targetLimit", goal.getTargetLimit());
@@ -178,46 +196,38 @@ public class ActivitySetupActivity extends AppCompatActivity {
             activityData.put("unit", goal.getUnit());
             activityData.put("userId", uid);
 
-            // Save to "activities" collection
+            Log.d("ActivitySetup", "Calling Firestore add() for goal " + (i+1));
+
             com.google.firebase.firestore.FirebaseFirestore.getInstance()
                     .collection("activities")
                     .add(activityData)
                     .addOnSuccessListener(documentReference -> {
                         savedCount[0]++;
-                        Log.d("ActivitySetup", "Activity saved: " + savedCount[0] + "/" + totalGoals);
+                        Log.d("ActivitySetup", "✓ SUCCESS for goal " + (goalIndex+1) + ": " + savedCount[0] + "/" + totalGoals + " saved");
 
-                        // Check if all activities are processed
                         if (savedCount[0] + failedCount[0] == totalGoals) {
-                            if (savedCount[0] > 0) {
-                                // At least some activities saved successfully
-                                updateUserProfile();
-                            } else {
-                                Toast.makeText(ActivitySetupActivity.this,
-                                        "Failed to save activities. Please try again.",
-                                        Toast.LENGTH_LONG).show();
-                            }
+                            Log.d("ActivitySetup", "!!! All goals processed! Calling updateUserProfile() !!!");
+                            runOnUiThread(() -> updateUserProfile());
                         }
                     })
                     .addOnFailureListener(e -> {
                         failedCount[0]++;
-                        Log.e("ActivitySetup", "Failed to save activity", e);
+                        Log.e("ActivitySetup", "✗ FAILURE for goal " + (goalIndex+1) + ": " + e.getMessage(), e);
 
-                        // Check if all activities are processed (success or failure)
                         if (savedCount[0] + failedCount[0] == totalGoals) {
+                            Log.d("ActivitySetup", "All goals processed (with errors). Saved: " + savedCount[0] + ", Failed: " + failedCount[0]);
                             if (savedCount[0] > 0) {
-                                // Some activities saved, continue anyway
-                                Toast.makeText(ActivitySetupActivity.this,
-                                        "Some activities failed to save",
-                                        Toast.LENGTH_SHORT).show();
-                                updateUserProfile();
+                                runOnUiThread(() -> updateUserProfile());
                             } else {
                                 Toast.makeText(ActivitySetupActivity.this,
-                                        "Failed to save activities. Please try again.",
+                                        "All activities failed to save. Error: " + e.getMessage(),
                                         Toast.LENGTH_LONG).show();
                             }
                         }
                     });
         }
+
+        Log.d("ActivitySetup", "=== END saveGoalsToFirestore (all add() calls initiated) ===");
     }
 
     private void updateUserProfile() {
@@ -227,15 +237,24 @@ public class ActivitySetupActivity extends AppCompatActivity {
         String finalUserId = (firebaseUser != null) ? firebaseUser.getUid() : userId;
         Log.d("ActivitySetup", "Using userId for navigation: " + finalUserId);
 
-        // Just update setupComplete flag and navigate - skip the user profile save for now
+        // Create a map with ALL the user data we want to save
+        java.util.HashMap<String, Object> userData = new java.util.HashMap<>();
+        userData.put("setupComplete", true);
+        userData.put("hasCompletedQuestionnaire", true);
+        if (selectedGoals != null && !selectedGoals.isEmpty()) {
+            userData.put("selectedGoals", selectedGoals);
+        }
+
+        // Update or create user document with setupComplete flag
         com.google.firebase.firestore.FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(finalUserId)
-                .set(java.util.Collections.singletonMap("setupComplete", true),
-                        com.google.firebase.firestore.SetOptions.merge())
+                .set(userData, com.google.firebase.firestore.SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("ActivitySetup", "Setup complete! Navigating to dashboard");
+                    Log.d("ActivitySetup", "✓✓✓ Setup complete! setupComplete=true saved to Firestore");
+                    Log.d("ActivitySetup", "Navigating to dashboard...");
                     Toast.makeText(ActivitySetupActivity.this, "Setup complete!", Toast.LENGTH_SHORT).show();
+
                     Intent intent = new Intent(ActivitySetupActivity.this, DashboardActivity.class);
                     intent.putExtra("USER_ID", finalUserId);
                     intent.putExtra("IS_TEST_MODE", false);
@@ -244,7 +263,7 @@ public class ActivitySetupActivity extends AppCompatActivity {
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ActivitySetup", "Failed to update setupComplete flag", e);
+                    Log.e("ActivitySetup", "✗✗✗ Failed to update setupComplete flag", e);
                     // Navigate anyway since activities are saved
                     Toast.makeText(ActivitySetupActivity.this, "Activities saved! Continuing...", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(ActivitySetupActivity.this, DashboardActivity.class);
