@@ -138,7 +138,18 @@
                 android:layout_marginTop="16dp"
                 style="@style/RoundedOutlinedButton" />
 
+
             <!-- Activities Section -->
+
+            <Button
+                android:id="@+id/btnOpenReminder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Reminder"
+                tools:layout_editor_absoluteX="-1dp"
+                tools:layout_editor_absoluteY="594dp"
+                tools:ignore="MissingConstraints" />
+
             <TextView
                 android:id="@+id/activitiesTitle"
                 android:layout_width="wrap_content"

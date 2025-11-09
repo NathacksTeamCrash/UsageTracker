@@ -107,6 +107,14 @@ public class DashboardActivity extends AppCompatActivity {
             intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
+
+        Button btnOpenReminder = findViewById(R.id.btnOpenReminder);
+        btnOpenReminder.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, ReminderActivity.class);
+            startActivity(intent);
+        });
+
+
     }
 
     private void setupRecyclerView() {
