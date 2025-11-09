@@ -33,23 +33,36 @@ public class FirebaseHelper {
 
     // User operations
     public void saveUser(User user, OnCompleteListener<Void> listener) {
+        if (user == null || user.getUserId() == null) {
+            Log.e(TAG, "Cannot save user: user or userId is null");
+            return;
+        }
+        
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("userId", user.getUserId());
-        userMap.put("name", user.getName());
-        userMap.put("email", user.getEmail());
+        userMap.put("name", user.getName() != null ? user.getName() : "");
+        userMap.put("email", user.getEmail() != null ? user.getEmail() : "");
         userMap.put("householdSize", user.getHouseholdSize());
-        userMap.put("majorAppliances", user.getMajorAppliances());
+        userMap.put("majorAppliances", user.getMajorAppliances() != null ? user.getMajorAppliances() : new ArrayList<String>());
         userMap.put("previousMonthWaterUsage", user.getPreviousMonthWaterUsage());
         userMap.put("previousMonthElectricityUsage", user.getPreviousMonthElectricityUsage());
-        userMap.put("sustainabilityGoal", user.getSustainabilityGoal());
+        userMap.put("sustainabilityGoal", user.getSustainabilityGoal() != null ? user.getSustainabilityGoal() : "");
         userMap.put("ecoPoints", user.getEcoPoints());
         userMap.put("currentStreak", user.getCurrentStreak());
         userMap.put("hasCompletedQuestionnaire", user.isHasCompletedQuestionnaire());
         userMap.put("lastLoginDate", user.getLastLoginDate());
 
+        Log.d(TAG, "Saving user to Firestore: " + user.getUserId());
         db.collection("users").document(user.getUserId())
                 .set(userMap)
-                .addOnCompleteListener(listener);
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "User saved successfully to Firestore");
+                    } else {
+                        Log.e(TAG, "Error saving user to Firestore", task.getException());
+                    }
+                    listener.onComplete(task);
+                });
     }
 
     public void getUser(String userId, OnCompleteListener<DocumentSnapshot> listener) {

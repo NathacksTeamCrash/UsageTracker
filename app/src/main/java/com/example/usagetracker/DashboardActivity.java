@@ -16,22 +16,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.example.usagetracker.models.Goal;
+import com.example.usagetracker.models.UsageLog;
 import com.example.usagetracker.models.User;
 import com.example.usagetracker.utils.FirebaseHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
     private TextView ecoPointsTextView, streakTextView, userNameTextView;
-    private RecyclerView goalsRecyclerView;
-    private Button addGoalButton, logUsageButton, checkInButton, leaderboardButton, viewLogsButton, weekStatsButton;
+    private RecyclerView recentLogsRecyclerView;
+    private FloatingActionButton fabLogUsage, fabMenu;
+    private Button checkInButton, leaderboardButton, weekStatsButton;
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
     private User currentUser;
-    private GoalsAdapter goalsAdapter;
-    private List<Goal> goalsList;
+    private LogsAdapter logsAdapter;
+    private List<UsageLog> recentLogsList;
     private boolean isTestMode = false;
     private String userId;
 
@@ -76,29 +78,28 @@ public class DashboardActivity extends AppCompatActivity {
         initializeViews();
         setupRecyclerView();
         loadUserData();
+        loadRecentLogs();
     }
 
     private void initializeViews() {
         ecoPointsTextView = findViewById(R.id.ecoPointsTextView);
         streakTextView = findViewById(R.id.streakTextView);
         userNameTextView = findViewById(R.id.userNameTextView);
-        goalsRecyclerView = findViewById(R.id.goalsRecyclerView);
-        addGoalButton = findViewById(R.id.addGoalButton);
-        logUsageButton = findViewById(R.id.logUsageButton);
+        recentLogsRecyclerView = findViewById(R.id.recentLogsRecyclerView);
+        fabLogUsage = findViewById(R.id.fabLogUsage);
+        fabMenu = findViewById(R.id.fabMenu);
         checkInButton = findViewById(R.id.checkInButton);
         leaderboardButton = findViewById(R.id.leaderboardButton);
-        viewLogsButton = findViewById(R.id.viewLogsButton);
         weekStatsButton = findViewById(R.id.weekStatsButton);
 
-        addGoalButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, CreateGoalActivity.class);
-            startActivity(intent);
-        });
-
-        logUsageButton.setOnClickListener(v -> {
+        // FAB for logging
+        fabLogUsage.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, LogUsageActivity.class);
             startActivity(intent);
         });
+
+        // Menu FAB - show options
+        fabMenu.setOnClickListener(v -> showMenuOptions());
 
         checkInButton.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, CheckInActivity.class);
@@ -112,13 +113,6 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        viewLogsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, ViewLogsActivity.class);
-            intent.putExtra("USER_ID", userId);
-            intent.putExtra("IS_TEST_MODE", isTestMode);
-            startActivity(intent);
-        });
-
         weekStatsButton.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, WeekStatsActivity.class);
             intent.putExtra("USER_ID", userId);
@@ -127,11 +121,54 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
+    private void showMenuOptions() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        builder.setTitle("Menu");
+        String[] options = {"View All Logs", "Create Goal", "Settings"};
+        builder.setItems(options, (dialog, which) -> {
+            switch (which) {
+                case 0:
+                    Intent logsIntent = new Intent(DashboardActivity.this, ViewLogsActivity.class);
+                    logsIntent.putExtra("USER_ID", userId);
+                    logsIntent.putExtra("IS_TEST_MODE", isTestMode);
+                    startActivity(logsIntent);
+                    break;
+                case 1:
+                    Intent goalIntent = new Intent(DashboardActivity.this, CreateGoalActivity.class);
+                    startActivity(goalIntent);
+                    break;
+                case 2:
+                    // Settings - could add later
+                    Toast.makeText(this, "Settings coming soon", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        });
+        builder.show();
+    }
+
     private void setupRecyclerView() {
-        goalsList = new ArrayList<>();
-        goalsAdapter = new GoalsAdapter(goalsList);
-        goalsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        goalsRecyclerView.setAdapter(goalsAdapter);
+        recentLogsList = new ArrayList<>();
+        logsAdapter = new LogsAdapter(recentLogsList);
+        recentLogsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recentLogsRecyclerView.setAdapter(logsAdapter);
+    }
+
+    private void loadRecentLogs() {
+        if (userId == null) return;
+
+        firebaseHelper.getUsageLogs(userId, task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                recentLogsList.clear();
+                int count = 0;
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    if (count >= 10) break; // Show only last 10 logs
+                    UsageLog log = firebaseHelper.documentToUsageLog(document);
+                    recentLogsList.add(log);
+                    count++;
+                }
+                runOnUiThread(() -> logsAdapter.notifyDataSetChanged());
+            }
+        });
     }
 
     private void loadUserData() {
@@ -152,7 +189,7 @@ public class DashboardActivity extends AppCompatActivity {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 currentUser = firebaseHelper.documentToUser(task.getResult());
                 updateUI();
-                loadGoals();
+                loadRecentLogs();
             } else {
                 // If user doesn't exist, create test user as fallback
                 createTestUser();
@@ -171,7 +208,7 @@ public class DashboardActivity extends AppCompatActivity {
         currentUser.setPreviousMonthElectricityUsage(300);
         
         updateUI();
-        loadGoals();
+        loadRecentLogs();
     }
 
     private void updateUI() {
@@ -182,23 +219,6 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void loadGoals() {
-        if (userId == null) return;
-
-        // Load goals asynchronously
-        firebaseHelper.getGoals(userId, task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                goalsList.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Goal goal = firebaseHelper.documentToGoal(document);
-                    goalsList.add(goal);
-                }
-                // Update UI on main thread
-                runOnUiThread(() -> goalsAdapter.notifyDataSetChanged());
-            }
-        });
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -206,8 +226,9 @@ public class DashboardActivity extends AppCompatActivity {
         if (currentUser == null) {
             loadUserData();
         } else {
-            // Just refresh goals
-            loadGoals();
+            // Refresh user data and logs
+            loadUserData();
+            loadRecentLogs();
         }
     }
 

@@ -45,10 +45,10 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
         // Show goal status
         if (log.isMetGoal()) {
             holder.statusTextView.setText("✓ Goal Met");
-            holder.statusTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_green_dark));
+            holder.statusTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_green_dark, null));
         } else {
             holder.statusTextView.setText("✗ Over Goal");
-            holder.statusTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_red_dark));
+            holder.statusTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_red_dark, null));
         }
         
         // Show points earned

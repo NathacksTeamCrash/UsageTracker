@@ -143,15 +143,15 @@ public class CheckInActivity extends AppCompatActivity {
 
         // Color coding: green for reduction, red for increase
         if (waterChange < 0) {
-            waterChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+            waterChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark, null));
         } else {
-            waterChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+            waterChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark, null));
         }
 
         if (electricityChange < 0) {
-            electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+            electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark, null));
         } else {
-            electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+            electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark, null));
         }
     }
     

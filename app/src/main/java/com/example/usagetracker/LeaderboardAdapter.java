@@ -38,11 +38,11 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
 
         // Highlight top 3
         if (rank == 1) {
-            holder.rankTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_orange_dark));
+            holder.rankTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_orange_dark, null));
         } else if (rank == 2) {
-            holder.rankTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.darker_gray));
+            holder.rankTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.darker_gray, null));
         } else if (rank == 3) {
-            holder.rankTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_orange_light));
+            holder.rankTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_orange_light, null));
         }
     }
 

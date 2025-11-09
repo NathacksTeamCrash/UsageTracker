@@ -83,7 +83,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp"
-        style="@style/Widget.MaterialComponents.Button" />
+        style="@style/RoundedButton" />
 
     <Button
         android:id="@+id/testLoginButton"
