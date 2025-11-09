@@ -107,8 +107,8 @@ public class RegisterActivity extends AppCompatActivity {
                                     // User data saved successfully, navigate to questionnaire
                                     Toast.makeText(RegisterActivity.this, R.string.register_success, Toast.LENGTH_SHORT).show();
                                     
-                                    // Navigate to questionnaire with user ID
-                                    Intent intent = new Intent(RegisterActivity.this, QuestionnaireActivity.class);
+                                    // Navigate to questionnaire welcome screen
+                                    Intent intent = new Intent(RegisterActivity.this, QuestionnaireWelcomeActivity.class);
                                     intent.putExtra("USER_ID", firebaseUser.getUid());
                                     intent.putExtra("IS_NEW_USER", true);
                                     startActivity(intent);
@@ -124,7 +124,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     Toast.makeText(RegisterActivity.this, "Account created but profile save failed. Please try again.", Toast.LENGTH_LONG).show();
                                     
                                     // Still navigate to questionnaire - user can complete it
-                                    Intent intent = new Intent(RegisterActivity.this, QuestionnaireActivity.class);
+                                    Intent intent = new Intent(RegisterActivity.this, QuestionnaireWelcomeActivity.class);
                                     intent.putExtra("USER_ID", firebaseUser.getUid());
                                     intent.putExtra("IS_NEW_USER", true);
                                     startActivity(intent);

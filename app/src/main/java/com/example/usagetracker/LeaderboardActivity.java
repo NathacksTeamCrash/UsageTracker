@@ -54,15 +54,13 @@ public class LeaderboardActivity extends AppCompatActivity {
 
     private void loadLeaderboard() {
         firebaseHelper.getTopUsers(50, task -> {
-            if (task.isSuccessful()) {
+            if (task.isSuccessful() && task.getResult() != null) {
                 usersList.clear();
-                int rank = 1;
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     User user = firebaseHelper.documentToUser(document);
                     usersList.add(user);
-                    rank++;
                 }
-                adapter.notifyDataSetChanged();
+                runOnUiThread(() -> adapter.notifyDataSetChanged());
             } else {
                 Toast.makeText(LeaderboardActivity.this, "Failed to load leaderboard", Toast.LENGTH_SHORT).show();
             }

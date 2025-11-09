@@ -64,10 +64,15 @@ public class LogUsageActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
+        String userId = getIntent().getStringExtra("USER_ID");
         FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null) return;
+        if (firebaseUser != null) {
+            userId = firebaseUser.getUid();
+        }
+        
+        if (userId == null) return;
 
-        firebaseHelper.getUser(firebaseUser.getUid(), task -> {
+        firebaseHelper.getUser(userId, task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 currentUser = firebaseHelper.documentToUser(task.getResult());
             }
@@ -75,15 +80,20 @@ public class LogUsageActivity extends AppCompatActivity {
     }
 
     private void loadGoals() {
+        String userId = getIntent().getStringExtra("USER_ID");
         FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null) {
+        if (firebaseUser != null) {
+            userId = firebaseUser.getUid();
+        }
+        
+        if (userId == null) {
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        firebaseHelper.getGoals(firebaseUser.getUid(), task -> {
-            if (task.isSuccessful()) {
+        firebaseHelper.getGoals(userId, task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
                 goalsList.clear();
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     Goal goal = firebaseHelper.documentToGoal(document);
@@ -114,8 +124,14 @@ public class LogUsageActivity extends AppCompatActivity {
     }
 
     private void saveLog() {
+        String userId = getIntent().getStringExtra("USER_ID");
         FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null || goalsList.isEmpty()) {
+        if (firebaseUser != null) {
+            userId = firebaseUser.getUid();
+        }
+        
+        if (userId == null || goalsList.isEmpty()) {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -142,7 +158,7 @@ public class LogUsageActivity extends AppCompatActivity {
 
             // Create usage log
             UsageLog log = new UsageLog(
-                    firebaseUser.getUid(),
+                    userId,
                     selectedGoal.getGoalId(),
                     selectedGoal.getActivityName(),
                     usageAmount,

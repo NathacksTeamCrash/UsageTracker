@@ -46,7 +46,7 @@ public class FirebaseHelper {
         userMap.put("majorAppliances", user.getMajorAppliances() != null ? user.getMajorAppliances() : new ArrayList<String>());
         userMap.put("previousMonthWaterUsage", user.getPreviousMonthWaterUsage());
         userMap.put("previousMonthElectricityUsage", user.getPreviousMonthElectricityUsage());
-        userMap.put("sustainabilityGoal", user.getSustainabilityGoal() != null ? user.getSustainabilityGoal() : "");
+        userMap.put("selectedGoals", user.getSelectedGoals() != null ? user.getSelectedGoals() : new ArrayList<String>());
         userMap.put("ecoPoints", user.getEcoPoints());
         userMap.put("currentStreak", user.getCurrentStreak());
         userMap.put("hasCompletedQuestionnaire", user.isHasCompletedQuestionnaire());
@@ -186,7 +186,17 @@ public class FirebaseHelper {
         
         user.setPreviousMonthWaterUsage(document.getDouble("previousMonthWaterUsage") != null ? document.getDouble("previousMonthWaterUsage") : 0.0);
         user.setPreviousMonthElectricityUsage(document.getDouble("previousMonthElectricityUsage") != null ? document.getDouble("previousMonthElectricityUsage") : 0.0);
-        user.setSustainabilityGoal(document.getString("sustainabilityGoal"));
+        
+        // Handle selectedGoals list
+        Object goalsObj = document.get("selectedGoals");
+        if (goalsObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<String> goals = (List<String>) goalsObj;
+            user.setSelectedGoals(goals);
+        } else {
+            user.setSelectedGoals(new ArrayList<>());
+        }
+        
         user.setEcoPoints(document.getLong("ecoPoints") != null ? document.getLong("ecoPoints").intValue() : 0);
         user.setCurrentStreak(document.getLong("currentStreak") != null ? document.getLong("currentStreak").intValue() : 0);
         user.setHasCompletedQuestionnaire(document.getBoolean("hasCompletedQuestionnaire") != null ? document.getBoolean("hasCompletedQuestionnaire") : false);

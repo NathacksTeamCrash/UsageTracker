@@ -101,8 +101,6 @@ public class QuestionnaireActivity extends AppCompatActivity {
                 }
             }
 
-            final String finalSustainabilityGoal = sustainabilityGoal;
-
             // Get current user data and update it
             firebaseHelper.getUser(finalUserId, task -> {
                 if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
@@ -112,7 +110,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
                     user.setMajorAppliances(appliances);
                     user.setPreviousMonthWaterUsage(waterUsage);
                     user.setPreviousMonthElectricityUsage(electricityUsage);
-                    user.setSustainabilityGoal(finalSustainabilityGoal);
+                    // Note: selectedGoals is now set in the new questionnaire flow (GoalSelectionActivity)
                     user.setHasCompletedQuestionnaire(true);
 
                     firebaseHelper.saveUser(user, task1 -> {
@@ -137,7 +135,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
                     user.setMajorAppliances(appliances);
                     user.setPreviousMonthWaterUsage(waterUsage);
                     user.setPreviousMonthElectricityUsage(electricityUsage);
-                    user.setSustainabilityGoal(finalSustainabilityGoal);
+                    // Note: selectedGoals is now set in the new questionnaire flow (GoalSelectionActivity)
                     user.setHasCompletedQuestionnaire(true);
                     user.setEcoPoints(0);
                     user.setCurrentStreak(0);

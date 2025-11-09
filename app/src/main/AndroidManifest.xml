@@ -32,6 +32,18 @@
             android:name=".QuestionnaireActivity"
             android:exported="false" />
         <activity
+            android:name=".QuestionnaireWelcomeActivity"
+            android:exported="false"
+            android:parentActivityName=".LoginActivity" />
+        <activity
+            android:name=".GoalSelectionActivity"
+            android:exported="false"
+            android:parentActivityName=".QuestionnaireWelcomeActivity" />
+        <activity
+            android:name=".ActivitySetupActivity"
+            android:exported="false"
+            android:parentActivityName=".GoalSelectionActivity" />
+        <activity
             android:name=".DashboardActivity"
             android:exported="false" />
         <activity

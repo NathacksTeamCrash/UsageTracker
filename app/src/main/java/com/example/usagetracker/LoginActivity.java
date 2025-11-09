@@ -153,12 +153,35 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToDashboard(String userId, boolean isTestMode) {
-        // Navigate directly - don't wait for user data
-        Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
-        intent.putExtra("USER_ID", userId);
-        intent.putExtra("IS_TEST_MODE", isTestMode);
-        startActivity(intent);
-        finish();
+        // Check if user has completed questionnaire
+        FirebaseHelper firebaseHelper = new FirebaseHelper();
+        firebaseHelper.getUser(userId, task -> {
+            if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
+                com.example.usagetracker.models.User user = firebaseHelper.documentToUser(task.getResult());
+                if (user != null && !user.isHasCompletedQuestionnaire()) {
+                    // Navigate to questionnaire if not completed
+                    Intent intent = new Intent(LoginActivity.this, QuestionnaireWelcomeActivity.class);
+                    intent.putExtra("USER_ID", userId);
+                    intent.putExtra("IS_NEW_USER", false);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // Navigate to dashboard
+                    Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
+                    intent.putExtra("USER_ID", userId);
+                    intent.putExtra("IS_TEST_MODE", isTestMode);
+                    startActivity(intent);
+                    finish();
+                }
+            } else {
+                // User doesn't exist, navigate to questionnaire
+                Intent intent = new Intent(LoginActivity.this, QuestionnaireWelcomeActivity.class);
+                intent.putExtra("USER_ID", userId);
+                intent.putExtra("IS_NEW_USER", false);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 }
 

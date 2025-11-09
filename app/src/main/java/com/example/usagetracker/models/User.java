@@ -10,7 +10,7 @@ public class User {
     private List<String> majorAppliances;
     private double previousMonthWaterUsage; // liters
     private double previousMonthElectricityUsage; // kWh
-    private String sustainabilityGoal;
+    private List<String> selectedGoals; // Motivations from questionnaire
     private int ecoPoints;
     private int currentStreak;
     private boolean hasCompletedQuestionnaire;
@@ -86,12 +86,12 @@ public class User {
         this.previousMonthElectricityUsage = previousMonthElectricityUsage;
     }
 
-    public String getSustainabilityGoal() {
-        return sustainabilityGoal;
+    public List<String> getSelectedGoals() {
+        return selectedGoals;
     }
 
-    public void setSustainabilityGoal(String sustainabilityGoal) {
-        this.sustainabilityGoal = sustainabilityGoal;
+    public void setSelectedGoals(List<String> selectedGoals) {
+        this.selectedGoals = selectedGoals;
     }
 
     public int getEcoPoints() {

@@ -20,6 +20,7 @@ import java.util.Calendar;
 public class CheckInActivity extends AppCompatActivity {
     private TextView waterLastMonthTextView, waterCurrentMonthTextView, waterChangeTextView;
     private TextView electricityLastMonthTextView, electricityCurrentMonthTextView, electricityChangeTextView;
+    private TextView suggestionsTextView;
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
     private User currentUser;
@@ -48,6 +49,7 @@ public class CheckInActivity extends AppCompatActivity {
         electricityLastMonthTextView = findViewById(R.id.electricityLastMonthTextView);
         electricityCurrentMonthTextView = findViewById(R.id.electricityCurrentMonthTextView);
         electricityChangeTextView = findViewById(R.id.electricityChangeTextView);
+        suggestionsTextView = findViewById(R.id.suggestionsTextView);
 
         loadUserData();
         loadCurrentMonthUsage();
@@ -62,9 +64,9 @@ public class CheckInActivity extends AppCompatActivity {
         }
 
         firebaseHelper.getUser(firebaseUser.getUid(), task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
+            if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 currentUser = firebaseHelper.documentToUser(task.getResult());
-                updateLastMonthData();
+                runOnUiThread(() -> updateLastMonthData());
             }
         });
     }
@@ -93,7 +95,7 @@ public class CheckInActivity extends AppCompatActivity {
         long endTimestamp = calendar.getTimeInMillis();
 
         firebaseHelper.getUsageLogsForMonth(firebaseUser.getUid(), startTimestamp, endTimestamp, task -> {
-            if (task.isSuccessful()) {
+            if (task.isSuccessful() && task.getResult() != null) {
                 double waterUsage = 0.0;
                 double electricityUsage = 0.0;
 
@@ -106,8 +108,14 @@ public class CheckInActivity extends AppCompatActivity {
                     }
                 }
 
-                updateCurrentMonthData(waterUsage, electricityUsage);
-                calculateChanges(waterUsage, electricityUsage);
+                // Create final copies for use in lambda
+                final double finalWaterUsage = waterUsage;
+                final double finalElectricityUsage = electricityUsage;
+
+                runOnUiThread(() -> {
+                    updateCurrentMonthData(finalWaterUsage, finalElectricityUsage);
+                    calculateChanges(finalWaterUsage, finalElectricityUsage);
+                });
             }
         });
     }
@@ -153,6 +161,44 @@ public class CheckInActivity extends AppCompatActivity {
         } else {
             electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark, null));
         }
+
+        // Generate suggestions
+        generateSuggestions(waterChange, electricityChange, currentWater, currentElectricity);
+    }
+
+    private void generateSuggestions(double waterChange, double electricityChange, double currentWater, double currentElectricity) {
+        StringBuilder suggestions = new StringBuilder();
+        suggestions.append("💡 Suggestions:\n\n");
+
+        if (waterChange > 0) {
+            // Water usage increased
+            double reductionNeeded = (currentWater - currentUser.getPreviousMonthWaterUsage()) / 30.0; // Average per day
+            suggestions.append("• Try reducing shower time by ").append(String.format("%.1f", reductionNeeded / 10)).append(" minutes\n");
+            suggestions.append("• Fix any leaky faucets\n");
+            suggestions.append("• Use a timer when washing dishes\n");
+        } else if (waterChange < -5) {
+            suggestions.append("• Great job reducing water usage! Keep it up!\n");
+        }
+
+        if (electricityChange > 0) {
+            // Electricity usage increased
+            double reductionNeeded = (currentElectricity - currentUser.getPreviousMonthElectricityUsage()) / 30.0; // Average per day
+            suggestions.append("• Turn off lights when not in use\n");
+            suggestions.append("• Unplug devices when not charging\n");
+            suggestions.append("• Try reducing TV/computer time by ").append(String.format("%.1f", reductionNeeded / 2)).append(" hours per day\n");
+        } else if (electricityChange < -5) {
+            suggestions.append("• Excellent work on reducing electricity! Continue your efforts!\n");
+        }
+
+        if (waterChange <= 0 && electricityChange <= 0 && Math.abs(waterChange) < 5 && Math.abs(electricityChange) < 5) {
+            suggestions.append("• You're doing well! Try to maintain or improve your current usage levels.\n");
+        }
+
+        if (suggestions.length() == "💡 Suggestions:\n\n".length()) {
+            suggestions.append("• Keep tracking your usage to maintain your progress!\n");
+        }
+
+        suggestionsTextView.setText(suggestions.toString());
     }
     
     @Override
