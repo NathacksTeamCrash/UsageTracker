@@ -29,12 +29,12 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".QuestionnaireActivity"
-            android:exported="false" />
-        <activity
             android:name=".QuestionnaireWelcomeActivity"
             android:exported="false"
             android:parentActivityName=".LoginActivity" />
+        <activity
+            android:name=".QuestionnaireActivity"
+            android:exported="false" />
         <activity
             android:name=".GoalSelectionActivity"
             android:exported="false"

@@ -21,13 +21,13 @@ public class QuestionnaireWelcomeActivity extends AppCompatActivity {
         isNewUser = getIntent().getBooleanExtra("IS_NEW_USER", false);
 
         getStartedButton = findViewById(R.id.getStartedButton);
-        
+
         getStartedButton.setOnClickListener(v -> {
-            Intent intent = new Intent(QuestionnaireWelcomeActivity.this, GoalSelectionActivity.class);
+            // Navigate to QuestionnaireActivity (not GoalSelectionActivity)
+            Intent intent = new Intent(QuestionnaireWelcomeActivity.this, QuestionnaireActivity.class);
             intent.putExtra("USER_ID", userId);
             intent.putExtra("IS_NEW_USER", isNewUser);
             startActivity(intent);
         });
     }
 }
-

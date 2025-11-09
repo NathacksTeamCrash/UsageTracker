@@ -3,6 +3,7 @@ package com.example.usagetracker.utils;
 import android.util.Log;
 
 import com.example.usagetracker.models.Goal;
+import com.example.usagetracker.models.Household;
 import com.example.usagetracker.models.UsageLog;
 import com.example.usagetracker.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -11,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -50,7 +52,7 @@ public class FirebaseHelper {
         userMap.put("ecoPoints", user.getEcoPoints());
         userMap.put("currentStreak", user.getCurrentStreak());
         userMap.put("hasCompletedQuestionnaire", user.isHasCompletedQuestionnaire());
-        userMap.put("setupComplete", user.isSetupComplete()); // ADDED THIS LINE
+        userMap.put("setupComplete", user.isSetupComplete());
         userMap.put("lastLoginDate", user.getLastLoginDate());
 
         Log.d(TAG, "Saving user to Firestore: " + user.getUserId());
@@ -81,6 +83,71 @@ public class FirebaseHelper {
     public void updateUserStreak(String userId, int newStreak, OnCompleteListener<Void> listener) {
         db.collection("users").document(userId)
                 .update("currentStreak", newStreak)
+                .addOnCompleteListener(listener);
+    }
+
+    // Household operations
+    public void saveHousehold(Household household, OnCompleteListener<DocumentReference> listener) {
+        Map<String, Object> householdMap = new HashMap<>();
+        householdMap.put("householdSize", household.getHouseholdSize());
+        householdMap.put("majorAppliances", household.getMajorAppliances() != null ? household.getMajorAppliances() : new ArrayList<String>());
+        householdMap.put("previousMonthWaterUsage", household.getPreviousMonthWaterUsage());
+        householdMap.put("previousMonthElectricityUsage", household.getPreviousMonthElectricityUsage());
+        householdMap.put("residents", household.getResidents() != null ? household.getResidents() : new ArrayList<String>());
+        householdMap.put("createdAt", household.getCreatedAt());
+        householdMap.put("updatedAt", System.currentTimeMillis());
+
+        Log.d(TAG, "Saving household to Firestore");
+        db.collection("households")
+                .add(householdMap)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Log.d(TAG, "Household saved successfully with ID: " + task.getResult().getId());
+                        household.setHouseholdId(task.getResult().getId());
+                    } else {
+                        Log.e(TAG, "Error saving household to Firestore", task.getException());
+                    }
+                    listener.onComplete(task);
+                });
+    }
+
+    public void updateHousehold(String householdId, Household household, OnCompleteListener<Void> listener) {
+        Map<String, Object> householdMap = new HashMap<>();
+        householdMap.put("householdSize", household.getHouseholdSize());
+        householdMap.put("majorAppliances", household.getMajorAppliances() != null ? household.getMajorAppliances() : new ArrayList<String>());
+        householdMap.put("previousMonthWaterUsage", household.getPreviousMonthWaterUsage());
+        householdMap.put("previousMonthElectricityUsage", household.getPreviousMonthElectricityUsage());
+        householdMap.put("residents", household.getResidents() != null ? household.getResidents() : new ArrayList<String>());
+        householdMap.put("updatedAt", System.currentTimeMillis());
+
+        Log.d(TAG, "Updating household: " + householdId);
+        db.collection("households").document(householdId)
+                .set(householdMap)
+                .addOnCompleteListener(listener);
+    }
+
+    public void getHousehold(String householdId, OnCompleteListener<DocumentSnapshot> listener) {
+        db.collection("households").document(householdId)
+                .get()
+                .addOnCompleteListener(listener);
+    }
+
+    public void getHouseholdByResident(String userId, OnCompleteListener<QuerySnapshot> listener) {
+        db.collection("households")
+                .whereArrayContains("residents", userId)
+                .get()
+                .addOnCompleteListener(listener);
+    }
+
+    public void addResidentToHousehold(String householdId, String userId, OnCompleteListener<Void> listener) {
+        db.collection("households").document(householdId)
+                .update("residents", FieldValue.arrayUnion(userId))
+                .addOnCompleteListener(listener);
+    }
+
+    public void removeResidentFromHousehold(String householdId, String userId, OnCompleteListener<Void> listener) {
+        db.collection("households").document(householdId)
+                .update("residents", FieldValue.arrayRemove(userId))
                 .addOnCompleteListener(listener);
     }
 
@@ -201,9 +268,44 @@ public class FirebaseHelper {
         user.setEcoPoints(document.getLong("ecoPoints") != null ? document.getLong("ecoPoints").intValue() : 0);
         user.setCurrentStreak(document.getLong("currentStreak") != null ? document.getLong("currentStreak").intValue() : 0);
         user.setHasCompletedQuestionnaire(document.getBoolean("hasCompletedQuestionnaire") != null ? document.getBoolean("hasCompletedQuestionnaire") : false);
-        user.setSetupComplete(document.getBoolean("setupComplete") != null ? document.getBoolean("setupComplete") : false); // ADDED THIS LINE
+        user.setSetupComplete(document.getBoolean("setupComplete") != null ? document.getBoolean("setupComplete") : false);
         user.setLastLoginDate(document.getLong("lastLoginDate") != null ? document.getLong("lastLoginDate") : 0);
         return user;
+    }
+
+    // Helper method to convert DocumentSnapshot to Household
+    public Household documentToHousehold(DocumentSnapshot document) {
+        Household household = new Household();
+        household.setHouseholdId(document.getId());
+        household.setHouseholdSize(document.getLong("householdSize") != null ? document.getLong("householdSize").intValue() : 0);
+
+        // Handle majorAppliances list
+        Object appliancesObj = document.get("majorAppliances");
+        if (appliancesObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<String> appliances = (List<String>) appliancesObj;
+            household.setMajorAppliances(appliances);
+        } else {
+            household.setMajorAppliances(new ArrayList<>());
+        }
+
+        household.setPreviousMonthWaterUsage(document.getDouble("previousMonthWaterUsage") != null ? document.getDouble("previousMonthWaterUsage") : 0.0);
+        household.setPreviousMonthElectricityUsage(document.getDouble("previousMonthElectricityUsage") != null ? document.getDouble("previousMonthElectricityUsage") : 0.0);
+
+        // Handle residents list
+        Object residentsObj = document.get("residents");
+        if (residentsObj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<String> residents = (List<String>) residentsObj;
+            household.setResidents(residents);
+        } else {
+            household.setResidents(new ArrayList<>());
+        }
+
+        household.setCreatedAt(document.getLong("createdAt") != null ? document.getLong("createdAt") : 0);
+        household.setUpdatedAt(document.getLong("updatedAt") != null ? document.getLong("updatedAt") : 0);
+
+        return household;
     }
 
     // Helper method to convert DocumentSnapshot to Goal
