@@ -24,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,7 +222,8 @@ public class DashboardActivity extends AppCompatActivity {
 
     private boolean isLogInCurrentPeriod(UsageLog log, Goal goal) {
         Calendar calendar = Calendar.getInstance();
-        long logTime = log.getTimestamp();
+        Date logDate = log.getTimestamp().toDate();
+        long logTime = (logDate != null) ? logDate.getTime() : 0;
 
         if ("Daily".equals(goal.getFrequency())) {
             // Check if log is from today

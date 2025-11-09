@@ -1,5 +1,8 @@
 package com.example.usagetracker.models;
 
+// Import Firebase Timestamp
+import com.google.firebase.Timestamp;
+
 public class UsageLog {
     private String logId;
     private String userId;
@@ -8,7 +11,7 @@ public class UsageLog {
     private double usageAmount;
     private double targetLimit;
     private String type; // "Electric" or "Water"
-    private long timestamp;
+    private com.google.firebase.Timestamp timestamp;
     private int ecoPointsEarned;
     private boolean metGoal;
 
@@ -22,7 +25,7 @@ public class UsageLog {
         this.activityName = activityName;
         this.usageAmount = usageAmount;
         this.type = type;
-        this.timestamp = System.currentTimeMillis();
+        this.timestamp = com.google.firebase.Timestamp.now();
         this.ecoPointsEarned = 0;
         this.metGoal = false;
     }
@@ -76,11 +79,11 @@ public class UsageLog {
         this.type = type;
     }
 
-    public long getTimestamp() {
+    public com.google.firebase.Timestamp getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(com.google.firebase.Timestamp timestamp) {
         this.timestamp = timestamp;
     }
 

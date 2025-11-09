@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LogUsageActivity extends AppCompatActivity {
-    private Spinner activitySpinner;
+    private AutoCompleteTextView activitySpinner;
     private EditText usageAmountEditText;
     private Button saveLogButton;
     private FirebaseAuth auth;
@@ -57,7 +58,7 @@ public class LogUsageActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         firebaseHelper = new FirebaseHelper();
 
-        activitySpinner = findViewById(R.id.activitySpinner);
+        activitySpinner = findViewById(R.id.activityDropdown);
         usageAmountEditText = findViewById(R.id.usageAmountEditText);
         saveLogButton = findViewById(R.id.saveLogButton);
 
@@ -147,7 +148,8 @@ public class LogUsageActivity extends AppCompatActivity {
             return;
         }
 
-        int selectedPosition = activitySpinner.getSelectedItemPosition();
+        String selectedActivity = activitySpinner.getText().toString().trim();
+        int selectedPosition = activitiesList.indexOf(selectedActivity);
         if (selectedPosition < 0 || selectedPosition >= activitiesList.size()) {
             Toast.makeText(this, "Please select an activity", Toast.LENGTH_SHORT).show();
             return;
@@ -174,6 +176,12 @@ public class LogUsageActivity extends AppCompatActivity {
             Double targetLimit = activityTargetLimits.get(selectedPosition);
             logData.put("targetLimit", targetLimit);
 
+            java.util.Date currentDate = new java.util.Date();
+            logData.put("timestamp", new com.google.firebase.Timestamp(currentDate));
+
+            boolean metGoal = usageAmount <= targetLimit;
+            logData.put("metGoal", metGoal);
+
             firebaseHelper.getFirestore().collection("logs")
                     .add(logData)
                     .addOnCompleteListener(task -> {
@@ -188,11 +196,10 @@ public class LogUsageActivity extends AppCompatActivity {
             usageAmountEditText.setError("Please enter a valid number");
         }
     }
-    
+
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
     }
 }
-

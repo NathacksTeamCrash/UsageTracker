@@ -331,7 +331,18 @@ public class FirebaseHelper {
         log.setActivityName(document.getString("activityName"));
         log.setUsageAmount(document.getDouble("usageAmount") != null ? document.getDouble("usageAmount") : 0.0);
         log.setType(document.getString("type"));
-        log.setTimestamp(document.getLong("timestamp") != null ? document.getLong("timestamp") : 0);
+        log.setTargetLimit(document.getDouble("targetLimit") != null ? document.getDouble("targetLimit") : 0.0);
+        // Safely handle Firestore Timestamp and Number types for the timestamp field
+        Object timestampObj = document.get("timestamp");
+        if (timestampObj instanceof com.google.firebase.Timestamp) {
+            com.google.firebase.Timestamp ts = (com.google.firebase.Timestamp) timestampObj;
+            log.setTimestamp(ts);
+        } else if (timestampObj instanceof Number) {
+            long millis = ((Number) timestampObj).longValue();
+            log.setTimestamp(new com.google.firebase.Timestamp(new java.util.Date(millis)));
+        } else {
+            log.setTimestamp(new com.google.firebase.Timestamp(new java.util.Date(0)));
+        }
         log.setEcoPointsEarned(document.getLong("ecoPointsEarned") != null ? document.getLong("ecoPointsEarned").intValue() : 0);
         log.setMetGoal(document.getBoolean("metGoal") != null ? document.getBoolean("metGoal") : false);
         return log;

@@ -45,12 +45,17 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
         UsageLog log = logsList.get(position);
 
         holder.activityNameTextView.setText("Activity: " + log.getActivityName());
-        holder.usageAmountTextView.setText("Used: " + String.format("%.2f", log.getUsageAmount()));
-        holder.typeTextView.setText("Target: " + String.format("%.2f", log.getTargetLimit()));
+        holder.usageAmountTextView.setText(String.format("%.2f", log.getUsageAmount()));
+        holder.typeTextView.setText( "Target: " + String.format("%.2f", log.getTargetLimit()));
 
-        // Format date
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
-        holder.dateTextView.setText(sdf.format(new Date(log.getTimestamp())));
+        // Format and display the timestamp field, handle nulls safely
+        if (log.getTimestamp() != null) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", java.util.Locale.getDefault());
+            String formattedDate = sdf.format(log.getTimestamp().toDate());
+            holder.dateTextView.setText(formattedDate);
+        } else {
+            holder.dateTextView.setText("Date not available");
+        }
 
         // Show goal status
         if (log.isMetGoal()) {
@@ -76,7 +81,7 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
     }
 
     static class LogViewHolder extends RecyclerView.ViewHolder {
-        TextView activityNameTextView, usageAmountTextView, typeTextView, 
+        TextView activityNameTextView, usageAmountTextView, typeTextView,
                  dateTextView, statusTextView, pointsTextView;
 
         LogViewHolder(@NonNull View itemView) {
@@ -90,4 +95,3 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
         }
     }
 }
-

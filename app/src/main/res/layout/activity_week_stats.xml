@@ -10,7 +10,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:clipToPadding="false"
+        android:clipChildren="false">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
@@ -22,9 +24,10 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
+                android:background="@android:color/white"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                app:titleTextColor="@android:color/white" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <TextView
@@ -49,30 +52,32 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="24dp"
+            android:layout_margin="8dp"
             app:cardCornerRadius="16dp"
-            app:cardElevation="4dp">
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:layout_height="283dp"
                 android:gravity="center"
+                android:orientation="vertical"
                 android:padding="24dp">
 
                 <com.example.usagetracker.LeafProgressView
                     android:id="@+id/leafProgressView"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp" />
+                    android:layout_width="193dp"
+                    android:layout_height="177dp" />
 
                 <TextView
                     android:id="@+id/progressTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:text="0%"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
                     android:textColor="@android:color/holo_green_dark"
-                    android:layout_marginTop="16dp" />
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -84,10 +89,13 @@
             app:layout_constraintTop_toBottomOf="@id/leafCard"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/pointsCard"
+            app:layout_constraintHorizontal_chainStyle="spread"
             android:layout_marginTop="24dp"
             android:layout_marginEnd="8dp"
+            android:layout_margin="8dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -122,10 +130,13 @@
             app:layout_constraintTop_toBottomOf="@id/leafCard"
             app:layout_constraintStart_toEndOf="@id/goalsCard"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread"
             android:layout_marginTop="24dp"
             android:layout_marginStart="8dp"
+            android:layout_margin="8dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -160,10 +171,13 @@
             app:layout_constraintTop_toBottomOf="@id/goalsCard"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/electricityCard"
+            app:layout_constraintHorizontal_chainStyle="spread"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
+            android:layout_margin="8dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -198,10 +212,13 @@
             app:layout_constraintTop_toBottomOf="@id/goalsCard"
             app:layout_constraintStart_toEndOf="@id/waterCard"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_chainStyle="spread"
             android:layout_marginTop="16dp"
             android:layout_marginStart="8dp"
+            android:layout_margin="8dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -232,4 +249,3 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>
-
