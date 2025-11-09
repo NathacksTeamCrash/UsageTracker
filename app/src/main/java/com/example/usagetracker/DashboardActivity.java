@@ -33,6 +33,7 @@ public class DashboardActivity extends AppCompatActivity {
     private RecyclerView activitiesRecyclerView;
     private RecyclerView logsRecyclerView;
     private FloatingActionButton fabLogUsage;
+    private FloatingActionButton fabView;
     private Button checkInButton;
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
@@ -97,11 +98,19 @@ public class DashboardActivity extends AppCompatActivity {
         activitiesRecyclerView = findViewById(R.id.activitiesRecyclerView);
         logsRecyclerView = findViewById(R.id.logsRecyclerView);
         fabLogUsage = findViewById(R.id.fabLogUsage);
+        fabView = findViewById(R.id.fabView);
         checkInButton = findViewById(R.id.checkInButton);
 
         // FAB for logging
         fabLogUsage.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, LogUsageActivity.class);
+            intent.putExtra("USER_ID", userId);
+            startActivity(intent);
+        });
+
+        // FAB for viewing stats
+        fabView.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, WeekStatsActivity.class);
             intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
@@ -255,7 +264,12 @@ public class DashboardActivity extends AppCompatActivity {
         firebaseHelper.getUser(userId, task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 currentUser = firebaseHelper.documentToUser(task.getResult());
-                runOnUiThread(() -> updateUI());
+                Long ecoPointsLong = task.getResult().getLong("ecoPoints");
+                int ecoPoints = ecoPointsLong != null ? ecoPointsLong.intValue() : 0;
+                runOnUiThread(() -> {
+                    ecoPointsTextView.setText(String.valueOf(ecoPoints));
+                    updateUI();
+                });
             } else {
                 // If user doesn't exist, create test user as fallback
                 createTestUser();

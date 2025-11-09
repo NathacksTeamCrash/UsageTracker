@@ -208,4 +208,17 @@
         app:elevation="8dp"
         app:pressedTranslationZ="12dp" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabView"
+        android:layout_width="91dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="24dp"
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        app:backgroundTint="#4CAF50"
+        app:elevation="8dp"
+        app:fabSize="mini"
+        app:pressedTranslationZ="12dp"
+        app:tint="@android:color/white" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
