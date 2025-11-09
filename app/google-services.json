@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "526000322973",
+    "project_id": "crashreal",
+    "storage_bucket": "crashreal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:526000322973:android:0011aeb3218b6432941774",
+        "android_client_info": {
+          "package_name": "com.example.usagetracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKnocn_KSq3tGXrTDq7Xigpyk7wjVuHY4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
