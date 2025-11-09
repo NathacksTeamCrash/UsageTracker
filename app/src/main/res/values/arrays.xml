@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="activity_types">
+        <item>Electric</item>
+        <item>Water</item>
+    </string-array>
+
+    <string-array name="frequencies">
+        <item>Daily</item>
+        <item>Weekly</item>
+    </string-array>
+
+    <string-array name="units">
+        <item>minutes</item>
+        <item>hours</item>
+        <item>liters</item>
+        <item>kWh</item>
+    </string-array>
+</resources>
+

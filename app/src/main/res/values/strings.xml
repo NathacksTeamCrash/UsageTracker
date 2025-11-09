@@ -1,3 +1,74 @@
 <resources>
-    <string name="app_name">UsageTracker</string>
+    <string name="app_name">EcoLog</string>
+    
+    <!-- Authentication -->
+    <string name="welcome">Welcome to EcoLog</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="login_success">Login successful</string>
+    <string name="register_success">Registration successful</string>
+    <string name="error_auth">Authentication error</string>
+    
+    <!-- Questionnaire -->
+    <string name="questionnaire_title">Let\'s Get Started</string>
+    <string name="household_size">Household Size</string>
+    <string name="major_appliances">Major Appliances (comma separated)</string>
+    <string name="previous_month_water">Previous Month Water Usage (liters)</string>
+    <string name="previous_month_electricity">Previous Month Electricity Usage (kWh)</string>
+    <string name="sustainability_goal">Sustainability Goal</string>
+    <string name="submit">Submit</string>
+    
+    <!-- Dashboard -->
+    <string name="eco_points">Eco Points</string>
+    <string name="current_streak">Current Streak</string>
+    <string name="days">days</string>
+    <string name="my_goals">My Goals</string>
+    <string name="add_goal">Add Goal</string>
+    <string name="log_usage">Log Usage</string>
+    <string name="check_in">Check-In</string>
+    <string name="leaderboard">Leaderboard</string>
+    
+    <!-- Goal Setting -->
+    <string name="create_goal">Create Goal</string>
+    <string name="activity_name">Activity Name</string>
+    <string name="target_limit">Target Limit</string>
+    <string name="activity_type">Type</string>
+    <string name="frequency">Frequency</string>
+    <string name="electric">Electric</string>
+    <string name="water">Water</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="unit_minutes">minutes</string>
+    <string name="unit_hours">hours</string>
+    <string name="unit_liters">liters</string>
+    <string name="unit_kwh">kWh</string>
+    
+    <!-- Logging -->
+    <string name="log_activity">Log Activity</string>
+    <string name="select_activity">Select Activity</string>
+    <string name="usage_amount">Usage Amount</string>
+    <string name="save_log">Save Log</string>
+    
+    <!-- Check-In -->
+    <string name="usage_comparison">Usage Comparison</string>
+    <string name="current_month">Current Month</string>
+    <string name="last_month">Last Month</string>
+    <string name="change">Change</string>
+    <string name="water_usage">Water Usage</string>
+    <string name="electricity_usage">Electricity Usage</string>
+    
+    <!-- Leaderboard -->
+    <string name="top_users">Top Users</string>
+    <string name="rank">Rank</string>
+    <string name="points">Points</string>
+    
+    <!-- Common -->
+    <string name="logout">Logout</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="loading">Loading…</string>
 </resources>

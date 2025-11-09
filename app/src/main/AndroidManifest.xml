@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,6 +22,38 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".QuestionnaireActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateGoalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LogUsageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CheckInActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LeaderboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ViewLogsActivity"
+            android:exported="false"
+            android:parentActivityName=".DashboardActivity" />
+        <activity
+            android:name=".WeekStatsActivity"
+            android:exported="false"
+            android:parentActivityName=".DashboardActivity" />
     </application>
 
 </manifest>

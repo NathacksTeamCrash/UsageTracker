@@ -43,4 +43,14 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    
+    // Firebase dependencies
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    
+    // RecyclerView for lists
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    
+    // CardView for UI components
+    implementation("androidx.cardview:cardview:1.0.0")
 }
