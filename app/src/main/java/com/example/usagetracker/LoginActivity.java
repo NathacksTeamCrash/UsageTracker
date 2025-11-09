@@ -42,21 +42,23 @@ public class LoginActivity extends AppCompatActivity {
         registerTextView = findViewById(R.id.registerTextView);
 
         // Check if user is already logged in (only check Firebase, not test mode)
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            navigateToDashboard(currentUser.getUid(), false);
-            return;
-        }
+        // FirebaseUser currentUser = auth.getCurrentUser();
+        // if (currentUser != null) {
+        //     navigateToDashboard(currentUser.getUid(), false);
+        //     return;
+        // }
 
         // Check for test mode
+        // SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        // if (prefs.getBoolean(KEY_TEST_MODE, false)) {
+        //     String testUserId = prefs.getString(KEY_TEST_USER_ID, null);
+        //     if (testUserId != null) {
+        //         navigateToDashboard(testUserId, true);
+        //         return;
+        //     }
+        // }
+
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        if (prefs.getBoolean(KEY_TEST_MODE, false)) {
-            String testUserId = prefs.getString(KEY_TEST_USER_ID, null);
-            if (testUserId != null) {
-                navigateToDashboard(testUserId, true);
-                return;
-            }
-        }
 
         loginButton.setOnClickListener(v -> loginUser());
         
@@ -153,13 +155,28 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToDashboard(String userId, boolean isTestMode) {
-        // Check if user has completed questionnaire
+        // Check if user has completed setup (setupComplete flag)
         FirebaseHelper firebaseHelper = new FirebaseHelper();
         firebaseHelper.getUser(userId, task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 com.example.usagetracker.models.User user = firebaseHelper.documentToUser(task.getResult());
-                if (user != null && !user.isHasCompletedQuestionnaire()) {
-                    // Navigate to questionnaire if not completed
+                boolean setupComplete = false;
+                if (user != null) {
+                    // Try to get setupComplete from user model, fallback to hasCompletedQuestionnaire if not present
+                    try {
+                        // If User has getSetupComplete(), use it; else fallback
+                        java.lang.reflect.Method getSetupCompleteMethod = user.getClass().getMethod("getSetupComplete");
+                        Object setupCompleteObj = getSetupCompleteMethod.invoke(user);
+                        if (setupCompleteObj instanceof Boolean) {
+                            setupComplete = (Boolean) setupCompleteObj;
+                        }
+                    } catch (Exception e) {
+                        // Fallback for legacy users
+                        setupComplete = user.isHasCompletedQuestionnaire();
+                    }
+                }
+                if (!setupComplete) {
+                    // Navigate to questionnaire/setup flow if not complete
                     Intent intent = new Intent(LoginActivity.this, QuestionnaireWelcomeActivity.class);
                     intent.putExtra("USER_ID", userId);
                     intent.putExtra("IS_NEW_USER", false);
@@ -174,7 +191,7 @@ public class LoginActivity extends AppCompatActivity {
                     finish();
                 }
             } else {
-                // User doesn't exist, navigate to questionnaire
+                // User doesn't exist, navigate to questionnaire/setup flow
                 Intent intent = new Intent(LoginActivity.this, QuestionnaireWelcomeActivity.class);
                 intent.putExtra("USER_ID", userId);
                 intent.putExtra("IS_NEW_USER", false);

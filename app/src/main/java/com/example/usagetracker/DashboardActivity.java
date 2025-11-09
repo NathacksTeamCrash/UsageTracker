@@ -31,6 +31,7 @@ import java.util.Map;
 public class DashboardActivity extends AppCompatActivity {
     private TextView ecoPointsTextView, streakTextView, userNameTextView;
     private RecyclerView activitiesRecyclerView;
+    private RecyclerView logsRecyclerView;
     private FloatingActionButton fabLogUsage;
     private Button checkInButton;
     private FirebaseAuth auth;
@@ -40,6 +41,8 @@ public class DashboardActivity extends AppCompatActivity {
     private List<Goal> goalsList;
     private boolean isTestMode = false;
     private String userId;
+    private LogsAdapter logsAdapter;
+    private List<UsageLog> logsList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +85,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         initializeViews();
-        setupRecyclerView();
+        setupRecyclerViews();
         loadUserData();
         loadActivities();
     }
@@ -92,6 +95,7 @@ public class DashboardActivity extends AppCompatActivity {
         streakTextView = findViewById(R.id.streakTextView);
         userNameTextView = findViewById(R.id.userNameTextView);
         activitiesRecyclerView = findViewById(R.id.activitiesRecyclerView);
+        logsRecyclerView = findViewById(R.id.logsRecyclerView);
         fabLogUsage = findViewById(R.id.fabLogUsage);
         checkInButton = findViewById(R.id.checkInButton);
 
@@ -109,10 +113,16 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    private void setupRecyclerView() {
+    private void setupRecyclerViews() {
+        // Setup Activities RecyclerView (for goals)
         progressAdapter = new ActivityProgressAdapter(goalsList);
         activitiesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         activitiesRecyclerView.setAdapter(progressAdapter);
+
+        // Setup Logs RecyclerView
+        logsAdapter = new LogsAdapter(logsList);
+        logsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        logsRecyclerView.setAdapter(logsAdapter);
     }
 
     private void loadActivities() {
@@ -125,7 +135,7 @@ public class DashboardActivity extends AppCompatActivity {
                     Goal goal = firebaseHelper.documentToGoal(document);
                     goalsList.add(goal);
                 }
-                
+
                 runOnUiThread(() -> {
                     progressAdapter.notifyDataSetChanged();
                     loadCurrentUsage();
@@ -134,23 +144,45 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
+    // Loads the user's activity logs from the logs collection and displays them in the logsAdapter
+    private void loadUserLogs() {
+        if (userId == null) return;
+
+        firebaseHelper.getFirestore().collection("logs")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        logsList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            UsageLog log = firebaseHelper.documentToUsageLog(document);
+                            logsList.add(log);
+                        }
+                        runOnUiThread(() -> {
+                            logsAdapter.setLogs(logsList);
+                            logsAdapter.notifyDataSetChanged();
+                        });
+                    }
+                });
+    }
+
     private void loadCurrentUsage() {
         if (userId == null || goalsList.isEmpty()) return;
 
         // Get current period (today for daily, this week for weekly)
         Calendar calendar = Calendar.getInstance();
         long startTimestamp;
-        
+
         // For now, calculate for today (daily) or this week (weekly)
         // We'll aggregate usage for each goal
         Map<String, Double> usageMap = new HashMap<>();
-        
+
         firebaseHelper.getUsageLogs(userId, task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     UsageLog log = firebaseHelper.documentToUsageLog(document);
                     String goalId = log.getGoalId();
-                    
+
                     // Check if log is within current period
                     Goal goal = findGoalById(goalId);
                     if (goal != null) {
@@ -161,7 +193,7 @@ public class DashboardActivity extends AppCompatActivity {
                         }
                     }
                 }
-                
+
                 runOnUiThread(() -> {
                     progressAdapter.setCurrentUsageMap(usageMap);
                 });
@@ -181,7 +213,7 @@ public class DashboardActivity extends AppCompatActivity {
     private boolean isLogInCurrentPeriod(UsageLog log, Goal goal) {
         Calendar calendar = Calendar.getInstance();
         long logTime = log.getTimestamp();
-        
+
         if ("Daily".equals(goal.getFrequency())) {
             // Check if log is from today
             calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -209,6 +241,10 @@ public class DashboardActivity extends AppCompatActivity {
             return;
         }
 
+        // Set userId for logsAdapter and load logs immediately after userId assignment
+        logsAdapter.setUserId(userId);
+        loadUserLogs();
+
         // For test mode, create a dummy user immediately
         if (isTestMode) {
             createTestUser();
@@ -235,7 +271,7 @@ public class DashboardActivity extends AppCompatActivity {
         currentUser.setHasCompletedQuestionnaire(true);
         currentUser.setPreviousMonthWaterUsage(5000);
         currentUser.setPreviousMonthElectricityUsage(300);
-        
+
         updateUI();
     }
 
@@ -252,6 +288,7 @@ public class DashboardActivity extends AppCompatActivity {
         super.onResume();
         loadUserData();
         loadActivities();
+        loadUserLogs();
     }
 
     @Override
@@ -266,10 +303,10 @@ public class DashboardActivity extends AppCompatActivity {
             // Clear test mode
             SharedPreferences prefs = getSharedPreferences("EcoLogPrefs", MODE_PRIVATE);
             prefs.edit().putBoolean("test_mode", false).apply();
-            
+
             // Sign out from Firebase
             auth.signOut();
-            
+
             Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);

@@ -86,51 +86,45 @@ public class RegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     registerButton.setEnabled(true);
                     registerButton.setText(R.string.register);
-                    
+
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = auth.getCurrentUser();
                         if (firebaseUser != null) {
                             Log.d("RegisterActivity", "User registered successfully: " + firebaseUser.getUid());
-                            
-                            // User is automatically logged in after registration
-                            // Create user document in Firestore with all initial data
-                            User user = new User(firebaseUser.getUid(), name, email);
-                            user.setLastLoginDate(System.currentTimeMillis());
-                            user.setEcoPoints(0);
-                            user.setCurrentStreak(0);
-                            user.setHasCompletedQuestionnaire(false);
-                            
-                            // Save user to Firestore
-                            firebaseHelper.saveUser(user, task1 -> {
-                                if (task1.isSuccessful()) {
-                                    Log.d("RegisterActivity", "User data saved to Firestore successfully");
-                                    // User data saved successfully, navigate to questionnaire
-                                    Toast.makeText(RegisterActivity.this, R.string.register_success, Toast.LENGTH_SHORT).show();
-                                    
-                                    // Navigate to questionnaire welcome screen
-                                    Intent intent = new Intent(RegisterActivity.this, QuestionnaireWelcomeActivity.class);
-                                    intent.putExtra("USER_ID", firebaseUser.getUid());
-                                    intent.putExtra("IS_NEW_USER", true);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    // Log the error
-                                    if (task1.getException() != null) {
-                                        Log.e("RegisterActivity", "Firestore save error: " + task1.getException().getMessage(), task1.getException());
-                                    }
-                                    
-                                    // Even if Firestore save fails, user is logged in, so proceed
-                                    // But show a warning
-                                    Toast.makeText(RegisterActivity.this, "Account created but profile save failed. Please try again.", Toast.LENGTH_LONG).show();
-                                    
-                                    // Still navigate to questionnaire - user can complete it
-                                    Intent intent = new Intent(RegisterActivity.this, QuestionnaireWelcomeActivity.class);
-                                    intent.putExtra("USER_ID", firebaseUser.getUid());
-                                    intent.putExtra("IS_NEW_USER", true);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            });
+                            // Save only non-sensitive info to Firestore: name, email, uid, setupComplete
+                            String uid = firebaseUser.getUid();
+                            String userName = name;
+                            String userEmail = email;
+                            boolean setupComplete = false;
+                            // Compose user data map
+                            java.util.HashMap<String, Object> userMap = new java.util.HashMap<>();
+                            userMap.put("uid", uid);
+                            userMap.put("name", userName);
+                            userMap.put("email", userEmail);
+                            userMap.put("setupComplete", setupComplete);
+                            Log.d("RegisterActivity", "Saving user info to Firestore: uid=" + uid + ", name=" + userName + ", email=" + userEmail + ", setupComplete=" + setupComplete);
+                            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                    .collection("users")
+                                    .document(uid)
+                                    .set(userMap)
+                                    .addOnSuccessListener(unused -> {
+                                        Log.d("RegisterActivity", "User info saved to Firestore successfully for uid: " + uid);
+                                        Toast.makeText(RegisterActivity.this, R.string.register_success, Toast.LENGTH_SHORT).show();
+                                        Log.d("RegisterActivity", "Navigating to LoginActivity after registration success");
+                                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("RegisterActivity", "Failed to save user info to Firestore: " + e.getMessage(), e);
+                                        Toast.makeText(RegisterActivity.this, "Account created but failed to save profile. Please login and try again.", Toast.LENGTH_LONG).show();
+                                        Log.d("RegisterActivity", "Navigating to LoginActivity after Firestore save failure");
+                                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                        finish();
+                                    });
                         } else {
                             Log.e("RegisterActivity", "Registration successful but FirebaseUser is null");
                             Toast.makeText(RegisterActivity.this, "Registration failed: User not created", Toast.LENGTH_SHORT).show();
@@ -139,15 +133,15 @@ public class RegisterActivity extends AppCompatActivity {
                         // Registration failed - log and show detailed error
                         Exception exception = task.getException();
                         String errorMsg = "Registration failed";
-                        
+
                         if (exception != null) {
                             Log.e("RegisterActivity", "Registration error: " + exception.getMessage(), exception);
-                            
+
                             // Check if it's a FirebaseAuthException for specific error codes
                             if (exception instanceof FirebaseAuthException) {
                                 FirebaseAuthException authException = (FirebaseAuthException) exception;
                                 String errorCode = authException.getErrorCode();
-                                
+
                                 switch (errorCode) {
                                     case "ERROR_EMAIL_ALREADY_IN_USE":
                                         errorMsg = "This email is already registered. Please login instead.";
@@ -193,7 +187,7 @@ public class RegisterActivity extends AppCompatActivity {
                         } else {
                             errorMsg = "Registration failed: Unknown error occurred.";
                         }
-                        
+
                         Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                     }
                 });

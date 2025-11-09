@@ -232,5 +232,9 @@ public class FirebaseHelper {
         log.setMetGoal(document.getBoolean("metGoal") != null ? document.getBoolean("metGoal") : false);
         return log;
     }
+
+    public FirebaseFirestore getFirestore() {
+        return db;
+    }
 }
 

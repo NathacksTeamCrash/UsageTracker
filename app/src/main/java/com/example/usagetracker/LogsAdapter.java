@@ -17,9 +17,19 @@ import java.util.Locale;
 
 public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder> {
     private List<UsageLog> logsList;
+    private String userId;
 
     public LogsAdapter(List<UsageLog> logsList) {
         this.logsList = logsList;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setLogs(List<UsageLog> newLogs) {
+        this.logsList = newLogs;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -33,15 +43,15 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
     @Override
     public void onBindViewHolder(@NonNull LogViewHolder holder, int position) {
         UsageLog log = logsList.get(position);
-        
-        holder.activityNameTextView.setText(log.getActivityName());
-        holder.usageAmountTextView.setText(String.format("%.2f", log.getUsageAmount()));
-        holder.typeTextView.setText(log.getType());
-        
+
+        holder.activityNameTextView.setText("Activity: " + log.getActivityName());
+        holder.usageAmountTextView.setText("Used: " + String.format("%.2f", log.getUsageAmount()));
+        holder.typeTextView.setText("Target: " + String.format("%.2f", log.getTargetLimit()));
+
         // Format date
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
         holder.dateTextView.setText(sdf.format(new Date(log.getTimestamp())));
-        
+
         // Show goal status
         if (log.isMetGoal()) {
             holder.statusTextView.setText("✓ Goal Met");
@@ -50,7 +60,7 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
             holder.statusTextView.setText("✗ Over Goal");
             holder.statusTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_red_dark, null));
         }
-        
+
         // Show points earned
         if (log.getEcoPointsEarned() > 0) {
             holder.pointsTextView.setText("+" + log.getEcoPointsEarned() + " pts");

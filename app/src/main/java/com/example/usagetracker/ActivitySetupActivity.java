@@ -1,7 +1,10 @@
 package com.example.usagetracker;
 
+import static android.content.Intent.getIntent;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -45,14 +48,21 @@ public class ActivitySetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_activity_setup);
 
+        // Try to get userId from Intent, otherwise use FirebaseAuth
+        auth = FirebaseAuth.getInstance();
         userId = getIntent().getStringExtra("USER_ID");
+        if (userId == null || userId.isEmpty()) {
+            FirebaseUser firebaseUser = auth.getCurrentUser();
+            if (firebaseUser != null) {
+                userId = firebaseUser.getUid();
+            }
+        }
         isNewUser = getIntent().getBooleanExtra("IS_NEW_USER", false);
         selectedGoals = getIntent().getStringArrayListExtra("SELECTED_GOALS");
         if (selectedGoals == null) {
             selectedGoals = new ArrayList<>();
         }
 
-        auth = FirebaseAuth.getInstance();
         firebaseHelper = new FirebaseHelper();
         activityInputs = new ArrayList<>();
 
@@ -122,7 +132,7 @@ public class ActivitySetupActivity extends AppCompatActivity {
         for (ActivityInput input : activityInputs) {
             String activityName = input.activityNameEditText.getText().toString().trim();
             String targetStr = input.targetEditText.getText().toString().trim();
-            
+
             if (activityName.isEmpty() || targetStr.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
@@ -147,17 +157,33 @@ public class ActivitySetupActivity extends AppCompatActivity {
     }
 
     private void saveGoalsToFirestore(List<Goal> goals) {
+        // Save each goal as an activity in the "activities" collection
         final int[] savedCount = {0};
         final int totalGoals = goals.size();
+        FirebaseUser firebaseUser = auth.getCurrentUser();
+        String uid = (firebaseUser != null) ? firebaseUser.getUid() : userId;
 
         for (Goal goal : goals) {
-            firebaseHelper.saveGoal(goal, task -> {
-                savedCount[0]++;
-                if (savedCount[0] == totalGoals) {
-                    // All goals saved, now update user
-                    updateUserProfile();
-                }
-            });
+            // Prepare activity data
+            java.util.HashMap<String, Object> activityData = new java.util.HashMap<>();
+            activityData.put("activityName", goal.getActivityName());
+            activityData.put("targetLimit", goal.getTargetLimit());
+            activityData.put("type", goal.getType());
+            activityData.put("frequency", goal.getFrequency());
+            activityData.put("unit", goal.getUnit());
+            activityData.put("userId", uid);
+
+            // Save to "activities" collection
+            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("activities")
+                .add(activityData)
+                .addOnCompleteListener(task -> {
+                    savedCount[0]++;
+                    if (savedCount[0] == totalGoals) {
+                        // All activities saved, now update user
+                        updateUserProfile();
+                    }
+                });
         }
     }
 
@@ -169,22 +195,33 @@ public class ActivitySetupActivity extends AppCompatActivity {
         }
 
         String finalUserId = (firebaseUser != null) ? firebaseUser.getUid() : userId;
-        
+
         firebaseHelper.getUser(finalUserId, task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 User user = firebaseHelper.documentToUser(task.getResult());
                 user.setSelectedGoals(selectedGoals);
                 user.setHasCompletedQuestionnaire(true);
-                
+
                 firebaseHelper.saveUser(user, task1 -> {
                     if (task1.isSuccessful()) {
-                        Toast.makeText(ActivitySetupActivity.this, "Setup complete!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(ActivitySetupActivity.this, DashboardActivity.class);
-                        intent.putExtra("USER_ID", finalUserId);
-                        intent.putExtra("IS_TEST_MODE", false);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
+                        // Update setupComplete flag in Firestore user document
+                        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(finalUserId)
+                            .update("setupComplete", true)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(ActivitySetupActivity.this, "Setup complete!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(ActivitySetupActivity.this, DashboardActivity.class);
+                                intent.putExtra("USER_ID", finalUserId);
+                                intent.putExtra("IS_TEST_MODE", false);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("ActivitySetupActivity", "Failed to update setupComplete flag", e);
+                                Toast.makeText(ActivitySetupActivity.this, "Error updating setup status", Toast.LENGTH_SHORT).show();
+                            });
                     } else {
                         Toast.makeText(ActivitySetupActivity.this, "Error saving profile", Toast.LENGTH_SHORT).show();
                     }
@@ -194,16 +231,27 @@ public class ActivitySetupActivity extends AppCompatActivity {
                 User user = new User(finalUserId, "User", "");
                 user.setSelectedGoals(selectedGoals);
                 user.setHasCompletedQuestionnaire(true);
-                
+
                 firebaseHelper.saveUser(user, task1 -> {
                     if (task1.isSuccessful()) {
-                        Toast.makeText(ActivitySetupActivity.this, "Setup complete!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(ActivitySetupActivity.this, DashboardActivity.class);
-                        intent.putExtra("USER_ID", finalUserId);
-                        intent.putExtra("IS_TEST_MODE", false);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
+                        // Update setupComplete flag in Firestore user document
+                        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(finalUserId)
+                            .update("setupComplete", true)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(ActivitySetupActivity.this, "Setup complete!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(ActivitySetupActivity.this, DashboardActivity.class);
+                                intent.putExtra("USER_ID", finalUserId);
+                                intent.putExtra("IS_TEST_MODE", false);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("ActivitySetupActivity", "Failed to update setupComplete flag", e);
+                                Toast.makeText(ActivitySetupActivity.this, "Error updating setup status", Toast.LENGTH_SHORT).show();
+                            });
                     } else {
                         Toast.makeText(ActivitySetupActivity.this, "Error saving profile", Toast.LENGTH_SHORT).show();
                     }
@@ -218,4 +266,3 @@ public class ActivitySetupActivity extends AppCompatActivity {
         return true;
     }
 }
-

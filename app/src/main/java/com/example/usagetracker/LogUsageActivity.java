@@ -32,13 +32,18 @@ public class LogUsageActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
     private List<Goal> goalsList;
+    private List<String> activitiesList;
     private User currentUser;
+    // List to hold activity IDs
+    private List<String> activityIds = new ArrayList<>();
+    // List to hold activity target limits
+    private List<Double> activityTargetLimits = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_usage);
-        
+
         // Setup toolbar with back button
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
@@ -57,7 +62,8 @@ public class LogUsageActivity extends AppCompatActivity {
         saveLogButton = findViewById(R.id.saveLogButton);
 
         goalsList = new ArrayList<>();
-        loadGoals();
+        activitiesList = new ArrayList<>();
+        loadActivities();
         loadUserData();
 
         saveLogButton.setOnClickListener(v -> saveLog());
@@ -69,7 +75,7 @@ public class LogUsageActivity extends AppCompatActivity {
         if (firebaseUser != null) {
             userId = firebaseUser.getUid();
         }
-        
+
         if (userId == null) return;
 
         firebaseHelper.getUser(userId, task -> {
@@ -79,69 +85,75 @@ public class LogUsageActivity extends AppCompatActivity {
         });
     }
 
-    private void loadGoals() {
-        String userId = getIntent().getStringExtra("USER_ID");
-        FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser != null) {
-            userId = firebaseUser.getUid();
-        }
-        
+    // Loads activities from the "activities" collection for the current user and populates the spinner.
+    private void loadActivities() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+
         if (userId == null) {
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        firebaseHelper.getGoals(userId, task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                goalsList.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Goal goal = firebaseHelper.documentToGoal(document);
-                    goalsList.add(goal);
-                }
+        firebaseHelper.getFirestore().collection("activities")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        activitiesList.clear();
+                        activityIds.clear();
+                        activityTargetLimits.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String activityName = document.getString("activityName");
+                            if (activityName != null) {
+                                activitiesList.add(activityName);
+                                // Save activity ID
+                                activityIds.add(document.getId());
+                                // Save targetLimit (may be null)
+                                Double targetLimit = document.getDouble("targetLimit");
+                                activityTargetLimits.add(targetLimit != null ? targetLimit : 0.0);
+                            }
+                        }
 
-                if (goalsList.isEmpty()) {
-                    Toast.makeText(LogUsageActivity.this, "Please create a goal first", Toast.LENGTH_SHORT).show();
-                    finish();
-                    return;
-                }
+                        if (activitiesList.isEmpty()) {
+                            Toast.makeText(LogUsageActivity.this, "Please create an activity first", Toast.LENGTH_SHORT).show();
+                            finish();
+                            return;
+                        }
 
-                // Populate spinner
-                List<String> activityNames = new ArrayList<>();
-                for (Goal goal : goalsList) {
-                    activityNames.add(goal.getActivityName());
-                }
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        LogUsageActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        activityNames
-                );
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                activitySpinner.setAdapter(adapter);
-            }
-        });
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                LogUsageActivity.this,
+                                android.R.layout.simple_spinner_item,
+                                activitiesList
+                        );
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        activitySpinner.setAdapter(adapter);
+                    } else {
+                        Toast.makeText(LogUsageActivity.this, "Failed to load activities", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
     }
 
     private void saveLog() {
-        String userId = getIntent().getStringExtra("USER_ID");
-        FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser != null) {
-            userId = firebaseUser.getUid();
-        }
-        
-        if (userId == null || goalsList.isEmpty()) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+
+        if (userId == null || activitiesList.isEmpty()) {
             Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
             return;
         }
 
         int selectedPosition = activitySpinner.getSelectedItemPosition();
-        if (selectedPosition < 0 || selectedPosition >= goalsList.size()) {
+        if (selectedPosition < 0 || selectedPosition >= activitiesList.size()) {
             Toast.makeText(this, "Please select an activity", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Goal selectedGoal = goalsList.get(selectedPosition);
+        String selectedActivityName = activitiesList.get(selectedPosition);
         String usageAmountStr = usageAmountEditText.getText().toString().trim();
 
         if (TextUtils.isEmpty(usageAmountStr)) {
@@ -152,49 +164,26 @@ public class LogUsageActivity extends AppCompatActivity {
         try {
             double usageAmount = Double.parseDouble(usageAmountStr);
 
-            // Calculate if goal was met and eco-points
-            boolean metGoal = GamificationHelper.metGoal(usageAmount, selectedGoal.getTargetLimit());
-            int ecoPointsEarned = GamificationHelper.calculateEcoPoints(usageAmount, selectedGoal.getTargetLimit());
+            // Prepare log data
+            java.util.Map<String, Object> logData = new java.util.HashMap<>();
+            logData.put("userId", userId);
+            logData.put("activityId", activityIds.get(selectedPosition));
+            logData.put("activityName", selectedActivityName);
+            logData.put("usageAmount", usageAmount);
+            // Add targetLimit for the selected activity
+            Double targetLimit = activityTargetLimits.get(selectedPosition);
+            logData.put("targetLimit", targetLimit);
 
-            // Create usage log
-            UsageLog log = new UsageLog(
-                    userId,
-                    selectedGoal.getGoalId(),
-                    selectedGoal.getActivityName(),
-                    usageAmount,
-                    selectedGoal.getType()
-            );
-            log.setMetGoal(metGoal);
-            log.setEcoPointsEarned(ecoPointsEarned);
-
-            // Save log
-            firebaseHelper.saveUsageLog(log, task -> {
-                if (task.isSuccessful()) {
-                    // Update user's eco-points and streak
-                    if (currentUser != null) {
-                        int newEcoPoints = currentUser.getEcoPoints() + ecoPointsEarned;
-                        int newStreak = GamificationHelper.updateStreak(currentUser.getCurrentStreak(), metGoal);
-
-                        currentUser.setEcoPoints(newEcoPoints);
-                        currentUser.setCurrentStreak(newStreak);
-
-                        firebaseHelper.saveUser(currentUser, task1 -> {
-                            if (task1.isSuccessful()) {
-                                String message = metGoal
-                                        ? "Great job! You earned " + ecoPointsEarned + " eco-points!"
-                                        : "Goal not met. Keep trying!";
-                                Toast.makeText(LogUsageActivity.this, message, Toast.LENGTH_SHORT).show();
-                                finish();
-                            }
-                        });
-                    } else {
-                        Toast.makeText(LogUsageActivity.this, "Log saved successfully!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                } else {
-                    Toast.makeText(LogUsageActivity.this, "Failed to save log", Toast.LENGTH_SHORT).show();
-                }
-            });
+            firebaseHelper.getFirestore().collection("logs")
+                    .add(logData)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(LogUsageActivity.this, "Log saved successfully!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            Toast.makeText(LogUsageActivity.this, "Failed to save log", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         } catch (NumberFormatException e) {
             usageAmountEditText.setError("Please enter a valid number");
         }

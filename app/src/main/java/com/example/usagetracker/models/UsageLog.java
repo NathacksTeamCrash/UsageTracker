@@ -6,6 +6,7 @@ public class UsageLog {
     private String goalId;
     private String activityName;
     private double usageAmount;
+    private double targetLimit;
     private String type; // "Electric" or "Water"
     private long timestamp;
     private int ecoPointsEarned;
@@ -97,6 +98,14 @@ public class UsageLog {
 
     public void setMetGoal(boolean metGoal) {
         this.metGoal = metGoal;
+    }
+
+    public double getTargetLimit() {
+        return targetLimit;
+    }
+
+    public void setTargetLimit(double targetLimit) {
+        this.targetLimit = targetLimit;
     }
 }
 
