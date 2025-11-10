@@ -116,6 +116,13 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        FloatingActionButton fabLeaderboard = findViewById(R.id.fabLeaderboard);
+        fabLeaderboard.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, LeaderboardActivity.class);
+            intent.putExtra("USER_ID", userId);
+            startActivity(intent);
+        });
+
         checkInButton.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, CheckInActivity.class);
             intent.putExtra("USER_ID", userId);
