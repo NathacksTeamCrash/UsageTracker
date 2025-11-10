@@ -264,46 +264,19 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Suggestions Card -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/suggestionsCard"
+        <Button
+            android:id="@+id/checkInButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/electricityCard"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="24dp"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:cardUseCompatPadding="true">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="💡 Suggestions"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/black"
-                    android:layout_marginBottom="12dp" />
-
-                <TextView
-                    android:id="@+id/suggestionsTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Loading suggestions..."
-                    android:textSize="14sp"
-                    android:textColor="@android:color/darker_gray"
-                    android:lineSpacingExtra="4dp" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            android:layout_marginTop="32dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:text="Check-In"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#4CAF50"
+            style="@style/Widget.MaterialComponents.Button" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

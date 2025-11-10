@@ -8,14 +8,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.usagetracker.models.Goal;
-
 import java.util.List;
+import android.view.View;
 
 public class GoalsAdapter extends RecyclerView.Adapter<GoalsAdapter.GoalViewHolder> {
-    private List<Goal> goalsList;
+    private List<String> goalsList;
 
-    public GoalsAdapter(List<Goal> goalsList) {
+    public GoalsAdapter(List<String> goalsList) {
         this.goalsList = goalsList;
     }
 
@@ -29,11 +28,8 @@ public class GoalsAdapter extends RecyclerView.Adapter<GoalsAdapter.GoalViewHold
 
     @Override
     public void onBindViewHolder(@NonNull GoalViewHolder holder, int position) {
-        Goal goal = goalsList.get(position);
-        holder.activityNameTextView.setText(goal.getActivityName());
-        holder.targetTextView.setText("Target: " + goal.getTargetLimit() + " " + goal.getUnit());
-        holder.typeTextView.setText(goal.getType());
-        holder.frequencyTextView.setText(goal.getFrequency());
+        String goal = goalsList.get(position);
+        holder.typeTextView.setText(goal);
     }
 
     @Override
@@ -42,14 +38,11 @@ public class GoalsAdapter extends RecyclerView.Adapter<GoalsAdapter.GoalViewHold
     }
 
     static class GoalViewHolder extends RecyclerView.ViewHolder {
-        TextView activityNameTextView, targetTextView, typeTextView, frequencyTextView;
+        TextView typeTextView;
 
         GoalViewHolder(@NonNull View itemView) {
             super(itemView);
-            activityNameTextView = itemView.findViewById(R.id.activityNameTextView);
-            targetTextView = itemView.findViewById(R.id.targetTextView);
             typeTextView = itemView.findViewById(R.id.typeTextView);
-            frequencyTextView = itemView.findViewById(R.id.frequencyTextView);
         }
     }
 }

@@ -39,8 +39,8 @@ public class DashboardActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
     private User currentUser;
-    private ActivityProgressAdapter progressAdapter;
-    private List<Goal> goalsList;
+    private GoalsAdapter goalsAdapter;
+    private List<String> goalStringsList;
     private boolean isTestMode = false;
     private String userId;
     private LogsAdapter logsAdapter;
@@ -63,7 +63,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         firebaseHelper = new FirebaseHelper();
-        goalsList = new ArrayList<>();
+        goalStringsList = new ArrayList<>();
 
         // Get user ID and test mode from intent
         Intent intent = getIntent();
@@ -125,9 +125,9 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void setupRecyclerViews() {
         // Setup Activities RecyclerView (for goals)
-        progressAdapter = new ActivityProgressAdapter(goalsList);
+        goalsAdapter = new GoalsAdapter(goalStringsList);
         activitiesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        activitiesRecyclerView.setAdapter(progressAdapter);
+        activitiesRecyclerView.setAdapter(goalsAdapter);
 
         // Setup Logs RecyclerView
         logsAdapter = new LogsAdapter(logsList);
@@ -138,20 +138,18 @@ public class DashboardActivity extends AppCompatActivity {
     private void loadActivities() {
         if (userId == null) return;
 
-        firebaseHelper.getGoals(userId, task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                goalsList.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Goal goal = firebaseHelper.documentToGoal(document);
-                    goalsList.add(goal);
-                }
-
-                runOnUiThread(() -> {
-                    progressAdapter.notifyDataSetChanged();
-                    loadCurrentUsage();
+        firebaseHelper.getFirestore().collection("users").document(userId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
+                        List<String> selectedGoals = (List<String>) task.getResult().get("selectedGoals");
+                        goalStringsList.clear();
+                        if (selectedGoals != null) {
+                            goalStringsList.addAll(selectedGoals);
+                        }
+                        runOnUiThread(() -> goalsAdapter.notifyDataSetChanged());
+                    }
                 });
-            }
-        });
     }
 
     // Loads the user's activity logs from the logs collection and displays them in the logsAdapter
@@ -177,7 +175,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void loadCurrentUsage() {
-        if (userId == null || goalsList.isEmpty()) return;
+        if (userId == null || goalStringsList.isEmpty()) return;
 
         // Get current period (today for daily, this week for weekly)
         Calendar calendar = Calendar.getInstance();
@@ -194,55 +192,25 @@ public class DashboardActivity extends AppCompatActivity {
                     String goalId = log.getGoalId();
 
                     // Check if log is within current period
-                    Goal goal = findGoalById(goalId);
-                    if (goal != null) {
-                        boolean isInPeriod = isLogInCurrentPeriod(log, goal);
-                        if (isInPeriod) {
-                            double current = usageMap.getOrDefault(goalId, 0.0);
-                            usageMap.put(goalId, current + log.getUsageAmount());
-                        }
-                    }
+                    // Since we no longer have Goal objects, skip this part or adjust accordingly
+                    // Here we skip period check because we lack goal frequency info
+                    double current = usageMap.getOrDefault(goalId, 0.0);
+                    usageMap.put(goalId, current + log.getUsageAmount());
                 }
 
                 runOnUiThread(() -> {
-                    progressAdapter.setCurrentUsageMap(usageMap);
+                    // No progressAdapter to update now
                 });
             }
         });
     }
 
     private Goal findGoalById(String goalId) {
-        for (Goal goal : goalsList) {
-            if (goal.getGoalId().equals(goalId)) {
-                return goal;
-            }
-        }
-        return null;
+        return null; // Removed as goalsList no longer exists
     }
 
     private boolean isLogInCurrentPeriod(UsageLog log, Goal goal) {
-        Calendar calendar = Calendar.getInstance();
-        Date logDate = log.getTimestamp().toDate();
-        long logTime = (logDate != null) ? logDate.getTime() : 0;
-
-        if ("Daily".equals(goal.getFrequency())) {
-            // Check if log is from today
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            long todayStart = calendar.getTimeInMillis();
-            return logTime >= todayStart;
-        } else {
-            // Check if log is from this week
-            calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            long weekStart = calendar.getTimeInMillis();
-            return logTime >= weekStart;
-        }
+        return true; // Removed as goalsList and Goal objects no longer used
     }
 
     private void loadUserData() {

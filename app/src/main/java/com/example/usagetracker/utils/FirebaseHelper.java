@@ -96,6 +96,8 @@ public class FirebaseHelper {
         householdMap.put("residents", household.getResidents() != null ? household.getResidents() : new ArrayList<String>());
         householdMap.put("createdAt", household.getCreatedAt());
         householdMap.put("updatedAt", System.currentTimeMillis());
+        householdMap.put("pastMonthWaterUsageMood", household.getPastMonthWaterUsageMood());
+        householdMap.put("pastMonthElectricityUsageMood", household.getPastMonthElectricityUsageMood());
 
         Log.d(TAG, "Saving household to Firestore");
         db.collection("households")
@@ -119,6 +121,8 @@ public class FirebaseHelper {
         householdMap.put("previousMonthElectricityUsage", household.getPreviousMonthElectricityUsage());
         householdMap.put("residents", household.getResidents() != null ? household.getResidents() : new ArrayList<String>());
         householdMap.put("updatedAt", System.currentTimeMillis());
+        householdMap.put("pastMonthWaterUsageMood", household.getPastMonthWaterUsageMood());
+        householdMap.put("pastMonthElectricityUsageMood", household.getPastMonthElectricityUsageMood());
 
         Log.d(TAG, "Updating household: " + householdId);
         db.collection("households").document(householdId)
@@ -304,6 +308,8 @@ public class FirebaseHelper {
 
         household.setCreatedAt(document.getLong("createdAt") != null ? document.getLong("createdAt") : 0);
         household.setUpdatedAt(document.getLong("updatedAt") != null ? document.getLong("updatedAt") : 0);
+        household.setPastMonthWaterUsageMood(document.getString("pastMonthWaterUsageMood"));
+        household.setPastMonthElectricityUsageMood(document.getString("pastMonthElectricityUsageMood"));
 
         return household;
     }

@@ -21,7 +21,9 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
+                android:background="@android:color/white"
+                android:titleTextColor="@android:color/black"
+                app:titleTextColor="@android:color/black"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
         </com.google.android.material.appbar.AppBarLayout>
@@ -148,7 +150,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="32dp"
-            style="@style/RoundedButton" />
+            style="@style/RoundedButton"
+            android:backgroundTint="#4CAF50"
+            android:textColor="@android:color/white" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

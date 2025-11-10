@@ -1,65 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:strokeColor="#4CAF50"
+    app:strokeWidth="1dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/typeTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:text="Goal"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#4CAF50"
+        android:gravity="center"
+        android:padding="16dp" />
 
-        <TextView
-            android:id="@+id/activityNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Activity Name"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:id="@+id/targetTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Target: 0"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="4dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
-
-            <TextView
-                android:id="@+id/typeTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Type"
-                android:textSize="12sp"
-                android:textColor="@android:color/holo_blue_dark"
-                android:background="@android:color/transparent"
-                android:padding="4dp" />
-
-            <TextView
-                android:id="@+id/frequencyTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Frequency"
-                android:textSize="12sp"
-                android:textColor="@android:color/holo_green_dark"
-                android:background="@android:color/transparent"
-                android:padding="4dp"
-                android:gravity="end" />
-        </LinearLayout>
-    </LinearLayout>
 </androidx.cardview.widget.CardView>
 

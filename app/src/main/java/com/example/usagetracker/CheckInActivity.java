@@ -3,6 +3,10 @@ package com.example.usagetracker;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
+import android.view.View;
+import android.app.AlertDialog;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,12 +28,13 @@ public class CheckInActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
     private User currentUser;
+    private Button checkInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_in);
-        
+
         // Setup toolbar with back button
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
@@ -49,10 +54,147 @@ public class CheckInActivity extends AppCompatActivity {
         electricityLastMonthTextView = findViewById(R.id.electricityLastMonthTextView);
         electricityCurrentMonthTextView = findViewById(R.id.electricityCurrentMonthTextView);
         electricityChangeTextView = findViewById(R.id.electricityChangeTextView);
-        suggestionsTextView = findViewById(R.id.suggestionsTextView);
+
+        checkInButton = findViewById(R.id.checkInButton);
+        checkInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCheckInDialog();
+            }
+        });
 
         loadUserData();
         loadCurrentMonthUsage();
+    }
+
+    private void showCheckInDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Check-In");
+        // Container for the EditTexts
+        View dialogView = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, null);
+        // We'll use a vertical LinearLayout to hold the EditTexts
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(50, 20, 50, 0);
+        final EditText waterEditText = new EditText(this);
+        waterEditText.setHint("New Water Usage (L)");
+        waterEditText.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        layout.addView(waterEditText);
+        final EditText electricityEditText = new EditText(this);
+        electricityEditText.setHint("New Electricity Usage (kWh)");
+        electricityEditText.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        layout.addView(electricityEditText);
+        builder.setView(layout);
+        builder.setPositiveButton("Confirm", null); // We'll override this below
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        final AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dlg -> {
+            Button confirm = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            confirm.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String waterStr = waterEditText.getText().toString().trim();
+                    String electricStr = electricityEditText.getText().toString().trim();
+                    if (waterStr.isEmpty() || electricStr.isEmpty()) {
+                        Toast.makeText(CheckInActivity.this, "Please enter both values", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    double newWater, newElectric;
+                    try {
+                        newWater = Double.parseDouble(waterStr);
+                        newElectric = Double.parseDouble(electricStr);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(CheckInActivity.this, "Invalid input", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    // Retrieve household document again
+                    FirebaseUser firebaseUser = auth.getCurrentUser();
+                    if (firebaseUser == null) {
+                        Toast.makeText(CheckInActivity.this, "User not authenticated", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        return;
+                    }
+                    firebaseHelper.getDb().collection("households")
+                            .whereArrayContains("residents", firebaseUser.getUid())
+                            .get()
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful() && task.getResult() != null && !task.getResult().isEmpty()) {
+                                    DocumentSnapshot householdDoc = task.getResult().getDocuments().get(0);
+                                    String mood;
+                                    if (householdDoc.contains("pastMonthWaterUsageMood") && householdDoc.get("pastMonthWaterUsageMood") != null)
+                                        mood = String.valueOf(householdDoc.get("pastMonthWaterUsageMood"));
+                                    else {
+                                        mood = "";
+                                    }
+                                    double prevMonthWater = householdDoc.getDouble("previousMonthWaterUsage") != null ? householdDoc.getDouble("previousMonthWaterUsage") : 0.0;
+                                    // Now, get the user document to update ecoPoints
+                                    firebaseHelper.getDb().collection("users").document(firebaseUser.getUid())
+                                            .get()
+                                            .addOnSuccessListener(userDoc -> {
+                                                double ecoPoints = 0.0;
+                                                if (userDoc.contains("ecoPoints") && userDoc.get("ecoPoints") != null)
+                                                    ecoPoints = userDoc.getDouble("ecoPoints");
+                                                boolean addedPoints;
+                                                boolean removedPoints;
+                                                if ("Bad".equals(mood)) {
+                                                    if (newWater <= prevMonthWater) {
+                                                        removedPoints = false;
+                                                        ecoPoints += 20.0;
+                                                        addedPoints = true;
+                                                    } else {
+                                                        addedPoints = false;
+                                                        ecoPoints -= 20.0;
+                                                        removedPoints = true;
+                                                    }
+                                                } else {
+                                                    removedPoints = false;
+                                                    addedPoints = false;
+                                                }
+                                                double finalEcoPoints = ecoPoints;
+                                                firebaseHelper.getDb().collection("users").document(firebaseUser.getUid())
+                                                        .update("ecoPoints", finalEcoPoints)
+                                                        .addOnSuccessListener(unused -> {
+                                                            // Update household currentMonthWaterUsage and currentMonthElectricityUsage
+                                                            householdDoc.getReference().update(
+                                                                    "currentMonthWaterUsage", newWater,
+                                                                    "currentMonthElectricityUsage", newElectric
+                                                            ).addOnSuccessListener(householdUpdate -> {
+                                                                // Now update UI and show toast on main thread
+                                                                runOnUiThread(() -> {
+                                                                    updateCurrentMonthData(newWater, newElectric);
+                                                                    calculateChanges(newWater, newElectric);
+                                                                    if (addedPoints) {
+                                                                        Toast.makeText(CheckInActivity.this, "Usage updated and points adjusted!", Toast.LENGTH_LONG).show();
+                                                                    } else if (removedPoints) {
+                                                                        Toast.makeText(CheckInActivity.this, "Usage updated and points adjusted!", Toast.LENGTH_LONG).show();
+                                                                    } else {
+                                                                        Toast.makeText(CheckInActivity.this, "Usage updated and points adjusted!", Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                                dialog.dismiss();
+                                                            }).addOnFailureListener(e -> {
+                                                                runOnUiThread(() -> Toast.makeText(CheckInActivity.this, "Failed to update usage in household.", Toast.LENGTH_SHORT).show());
+                                                                dialog.dismiss();
+                                                            });
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Toast.makeText(CheckInActivity.this, "Failed to update ecoPoints.", Toast.LENGTH_SHORT).show();
+                                                            dialog.dismiss();
+                                                        });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Toast.makeText(CheckInActivity.this, "Failed to retrieve user data.", Toast.LENGTH_SHORT).show();
+                                                dialog.dismiss();
+                                            });
+                                } else {
+                                    Toast.makeText(CheckInActivity.this, "No household found for this user", Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                }
+                            });
+                }
+            });
+        });
+        dialog.show();
     }
 
     private void loadUserData() {

@@ -40,7 +40,9 @@
         android:text="Get Started"
         android:textSize="18sp"
         android:padding="16dp"
-        style="@style/RoundedButton" />
+        style="@style/RoundedButton"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>
 

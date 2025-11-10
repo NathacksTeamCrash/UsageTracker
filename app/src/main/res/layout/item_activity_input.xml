@@ -37,6 +37,8 @@
                 android:padding="8dp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
+                android:backgroundTint="#4CAF50"
+                android:textColor="@android:color/white"
                 style="@style/RoundedOutlinedButton" />
 
         </LinearLayout>
@@ -99,4 +101,3 @@
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
-

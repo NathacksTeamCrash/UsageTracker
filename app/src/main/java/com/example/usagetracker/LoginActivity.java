@@ -20,7 +20,7 @@ import com.example.usagetracker.utils.FirebaseHelper;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText emailEditText, passwordEditText;
-    private Button loginButton, testLoginButton;
+    private Button loginButton;
     private TextView registerTextView;
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
@@ -39,14 +39,13 @@ public class LoginActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
-        testLoginButton = findViewById(R.id.testLoginButton);
+
         registerTextView = findViewById(R.id.registerTextView);
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         loginButton.setOnClickListener(v -> loginUser());
 
-        testLoginButton.setOnClickListener(v -> useTestLogin());
 
         registerTextView.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);

@@ -99,7 +99,7 @@
             app:layout_constraintTop_toBottomOf="@id/waterUsageInputLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="60dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -109,24 +109,53 @@
                 android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/sustainabilityGoalInputLayout"
-            android:layout_width="match_parent"
+        <!-- Water Usage Mood Layout -->
+        <LinearLayout
+            android:id="@+id/waterUsageMoodLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="@string/sustainability_goal"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/waterUsageInputLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp">
+            <RadioButton
+                android:id="@+id/waterGoodRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Good"/>
+            <RadioButton
+                android:id="@+id/waterBadRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bad"
+                android:layout_marginStart="24dp"/>
+        </LinearLayout>
+
+        <!-- Electricity Usage Mood Layout -->
+        <LinearLayout
+            android:id="@+id/electricityUsageMoodLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/electricityUsageInputLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/sustainabilityGoalEditText"
-                android:layout_width="match_parent"
+            android:layout_marginBottom="8dp">
+            <RadioButton
+                android:id="@+id/electricGoodRadio"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:minLines="2" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:text="Good"/>
+            <RadioButton
+                android:id="@+id/electricBadRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bad"
+                android:layout_marginStart="24dp"/>
+        </LinearLayout>
 
         <Button
             android:id="@+id/submitButton"
@@ -135,10 +164,11 @@
             android:text="@string/submit"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/sustainabilityGoalInputLayout"
+            app:layout_constraintTop_toBottomOf="@id/electricityUsageMoodLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="32dp"
+            android:backgroundTint="#4CAF50"
             style="@style/RoundedButton" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

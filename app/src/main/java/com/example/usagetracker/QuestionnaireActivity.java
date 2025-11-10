@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +26,7 @@ public class QuestionnaireActivity extends AppCompatActivity {
     private EditText householdSizeEditText, appliancesEditText, waterUsageEditText,
             electricityUsageEditText;
     private Button submitButton;
+    private RadioButton waterGoodRadio, waterBadRadio, electricGoodRadio, electricBadRadio;
     private FirebaseAuth auth;
     private FirebaseHelper firebaseHelper;
     private String userId;
@@ -50,6 +52,12 @@ public class QuestionnaireActivity extends AppCompatActivity {
         waterUsageEditText = findViewById(R.id.waterUsageEditText);
         electricityUsageEditText = findViewById(R.id.electricityUsageEditText);
         submitButton = findViewById(R.id.submitButton);
+
+        // Find radio buttons for moods
+        waterGoodRadio = findViewById(R.id.waterGoodRadio);
+        waterBadRadio = findViewById(R.id.waterBadRadio);
+        electricGoodRadio = findViewById(R.id.electricGoodRadio);
+        electricBadRadio = findViewById(R.id.electricBadRadio);
 
         submitButton.setOnClickListener(v -> submitQuestionnaire());
     }
@@ -107,6 +115,10 @@ public class QuestionnaireActivity extends AppCompatActivity {
 
             Log.d(TAG, "Creating household with userId: " + finalUserId);
 
+            // Determine moods based on radio buttons
+            String pastMonthWaterUsageMood = (waterGoodRadio != null && waterGoodRadio.isChecked()) ? "Good" : "Bad";
+            String pastMonthElectricityUsageMood = (electricGoodRadio != null && electricGoodRadio.isChecked()) ? "Good" : "Bad";
+
             // Create new Household object
             Household household = new Household(null, householdSize);
             household.setMajorAppliances(appliances);
@@ -116,6 +128,8 @@ public class QuestionnaireActivity extends AppCompatActivity {
             household.setCurrentMonthElectricityUsage(0.0);
             household.setCreatedAt(System.currentTimeMillis());
             household.setUpdatedAt(System.currentTimeMillis());
+            household.setPastMonthWaterUsageMood(pastMonthWaterUsageMood);
+            household.setPastMonthElectricityUsageMood(pastMonthElectricityUsageMood);
 
             // Add current user to residents array
             household.addResident(finalUserId);

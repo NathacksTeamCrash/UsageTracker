@@ -106,6 +106,8 @@
         android:text="@string/register"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/confirmPasswordInputLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -118,7 +120,7 @@
         android:layout_height="wrap_content"
         android:text="Already have an account? Login"
         android:textSize="14sp"
-        android:textColor="@android:color/holo_blue_dark"
+        android:textColor="#4CAF50"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/registerButton"
@@ -127,4 +129,3 @@
         android:layout_marginTop="24dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

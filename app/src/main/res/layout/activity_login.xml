@@ -83,21 +83,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp"
-        style="@style/RoundedButton" />
-
-    <Button
-        android:id="@+id/testLoginButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Test Login (Skip Firebase)"
-        android:textSize="14sp"
-        android:textColor="@android:color/holo_green_dark"
-        android:backgroundTint="@android:color/transparent"
-        app:layout_constraintTop_toBottomOf="@id/loginButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.Button.TextButton" />
+        style="@style/RoundedButton"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/registerTextView"
@@ -105,13 +93,12 @@
         android:layout_height="wrap_content"
         android:text="Don't have an account? Register"
         android:textSize="14sp"
-        android:textColor="@android:color/holo_blue_dark"
+        android:textColor="#4CAF50"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintTop_toBottomOf="@id/testLoginButton"
+        app:layout_constraintTop_toBottomOf="@id/loginButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

@@ -14,6 +14,8 @@ public class Household {
     private List<String> residents; // Array of user IDs
     private long createdAt;
     private long updatedAt;
+    private String pastMonthWaterUsageMood;
+    private String pastMonthElectricityUsageMood;
 
     public Household() {
         // Default constructor required for Firestore
@@ -21,6 +23,8 @@ public class Household {
         this.majorAppliances = new ArrayList<>();
         this.currentMonthWaterUsage = 0.0;
         this.currentMonthElectricityUsage = 0.0;
+        this.pastMonthWaterUsageMood = null;
+        this.pastMonthElectricityUsageMood = null;
     }
 
     public Household(String householdId, int householdSize) {
@@ -32,6 +36,8 @@ public class Household {
         this.updatedAt = System.currentTimeMillis();
         this.currentMonthWaterUsage = 0.0;
         this.currentMonthElectricityUsage = 0.0;
+        this.pastMonthWaterUsageMood = null;
+        this.pastMonthElectricityUsageMood = null;
     }
 
     // Getters and Setters
@@ -128,5 +134,22 @@ public class Household {
 
     public void setUpdatedAt(long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPastMonthWaterUsageMood() {
+        return pastMonthWaterUsageMood;
+    }
+
+    public void setPastMonthWaterUsageMood(String pastMonthWaterUsageMood) {
+        this.pastMonthWaterUsageMood = pastMonthWaterUsageMood;
+    }
+
+
+    public String getPastMonthElectricityUsageMood() {
+        return pastMonthElectricityUsageMood;
+    }
+
+    public void setPastMonthElectricityUsageMood(String pastMonthElectricityUsageMood) {
+        this.pastMonthElectricityUsageMood = pastMonthElectricityUsageMood;
     }
 }

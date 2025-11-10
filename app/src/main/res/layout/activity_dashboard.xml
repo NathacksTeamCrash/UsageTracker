@@ -150,7 +150,7 @@
                 android:id="@+id/activitiesTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Your Activities"
+                android:text="Your Goals"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"

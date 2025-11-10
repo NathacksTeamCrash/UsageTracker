@@ -15,7 +15,9 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@android:color/white"
+            android:titleTextColor="@android:color/black"
+            app:titleTextColor="@android:color/black"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -62,7 +64,8 @@
                 android:textSize="16sp"
                 android:padding="12dp"
                 android:layout_marginTop="16dp"
-                style="@style/RoundedOutlinedButton" />
+                android:backgroundTint="#4CAF50"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
     </ScrollView>
@@ -75,7 +78,8 @@
         android:textSize="18sp"
         android:padding="16dp"
         android:layout_margin="24dp"
-        style="@style/RoundedButton" />
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>
 
