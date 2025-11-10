@@ -50,10 +50,8 @@ public class CheckInActivity extends AppCompatActivity {
 
         waterLastMonthTextView = findViewById(R.id.waterLastMonthTextView);
         waterCurrentMonthTextView = findViewById(R.id.waterCurrentMonthTextView);
-        waterChangeTextView = findViewById(R.id.waterChangeTextView);
         electricityLastMonthTextView = findViewById(R.id.electricityLastMonthTextView);
         electricityCurrentMonthTextView = findViewById(R.id.electricityCurrentMonthTextView);
-        electricityChangeTextView = findViewById(R.id.electricityChangeTextView);
 
         checkInButton = findViewById(R.id.checkInButton);
         checkInButton.setOnClickListener(new View.OnClickListener() {
@@ -298,38 +296,34 @@ public class CheckInActivity extends AppCompatActivity {
         double lastMonthWater = currentUser.getPreviousMonthWaterUsage();
         double lastMonthElectricity = currentUser.getPreviousMonthElectricityUsage();
 
-        // Calculate percentage change
-        double waterChange = 0;
-        if (lastMonthWater > 0) {
-            waterChange = ((currentWater - lastMonthWater) / lastMonthWater) * 100;
-        }
+        // Avoid divide-by-zero
+        if (lastMonthWater == 0) lastMonthWater = 1;
+        if (lastMonthElectricity == 0) lastMonthElectricity = 1;
 
-        double electricityChange = 0;
-        if (lastMonthElectricity > 0) {
-            electricityChange = ((currentElectricity - lastMonthElectricity) / lastMonthElectricity) * 100;
-        }
+        // Calculate percent change (positive if usage went down)
+        double waterChange = ((lastMonthWater - currentWater) / lastMonthWater) * 100;
+        double electricityChange = ((lastMonthElectricity - currentElectricity) / lastMonthElectricity) * 100;
+
+        // Ensure no negative percentages — treat increases as 0 improvement
+        if (waterChange < 0) waterChange = 0;
+        if (electricityChange < 0) electricityChange = 0;
 
         // Update UI
-        String waterChangeText = String.format("%.1f%%", waterChange);
-        String electricityChangeText = String.format("%.1f%%", electricityChange);
+        String waterChangeText = String.format("+%.1f%%", waterChange);
+        String electricityChangeText = String.format("+%.1f%%", electricityChange);
 
         waterChangeTextView.setText(waterChangeText);
         electricityChangeTextView.setText(electricityChangeText);
 
-        // Color coding: green for reduction, red for increase
-        if (waterChange < 0) {
-            waterChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark, null));
-        } else {
-            waterChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark, null));
-        }
+        // Use green for positive progress, red otherwise
+        waterChangeTextView.setTextColor(
+            getResources().getColor(waterChange > 0 ? android.R.color.holo_green_dark : android.R.color.holo_red_dark, null)
+        );
+        electricityChangeTextView.setTextColor(
+            getResources().getColor(electricityChange > 0 ? android.R.color.holo_green_dark : android.R.color.holo_red_dark, null)
+        );
 
-        if (electricityChange < 0) {
-            electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark, null));
-        } else {
-            electricityChangeTextView.setTextColor(getResources().getColor(android.R.color.holo_red_dark, null));
-        }
-
-        // Generate suggestions
+        // Generate updated suggestions
         generateSuggestions(waterChange, electricityChange, currentWater, currentElectricity);
     }
 

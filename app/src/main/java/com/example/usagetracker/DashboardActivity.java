@@ -128,6 +128,14 @@ public class DashboardActivity extends AppCompatActivity {
             intent.putExtra("USER_ID", userId);
             startActivity(intent);
         });
+
+        // FAB for notifications/reminders
+        FloatingActionButton fabNotifications = findViewById(R.id.fabNotification);
+        fabNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, RemindersActivity.class);
+            intent.putExtra("USER_ID", userId);
+            startActivity(intent);
+        });
     }
 
     private void setupRecyclerViews() {

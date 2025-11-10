@@ -132,25 +132,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/change"
-                            android:textSize="12sp"
-                            android:textColor="@android:color/darker_gray" />
-
-                        <TextView
-                            android:id="@+id/waterChangeTextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0.0%"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@android:color/black"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
+                        android:orientation="vertical"/>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -241,25 +223,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/change"
-                            android:textSize="12sp"
-                            android:textColor="@android:color/darker_gray" />
-
-                        <TextView
-                            android:id="@+id/electricityChangeTextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0.0%"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@android:color/black"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
+                        android:orientation="vertical"/>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>

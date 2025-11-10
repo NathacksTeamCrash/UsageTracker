@@ -66,6 +66,10 @@
             android:name=".WeekStatsActivity"
             android:exported="false"
             android:parentActivityName=".DashboardActivity" />
+        <activity
+            android:name=".RemindersActivity"
+            android:exported="false"
+            android:parentActivityName=".DashboardActivity" />
     </application>
 
 </manifest>
