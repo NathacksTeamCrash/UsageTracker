@@ -112,6 +112,8 @@ public class QuestionnaireActivity extends AppCompatActivity {
             household.setMajorAppliances(appliances);
             household.setPreviousMonthWaterUsage(waterUsage);
             household.setPreviousMonthElectricityUsage(electricityUsage);
+            household.setCurrentMonthWaterUsage(0.0);
+            household.setCurrentMonthElectricityUsage(0.0);
             household.setCreatedAt(System.currentTimeMillis());
             household.setUpdatedAt(System.currentTimeMillis());
 

@@ -9,6 +9,8 @@ public class Household {
     private List<String> majorAppliances;
     private double previousMonthWaterUsage; // liters
     private double previousMonthElectricityUsage; // kWh
+    private double currentMonthWaterUsage;
+    private double currentMonthElectricityUsage;
     private List<String> residents; // Array of user IDs
     private long createdAt;
     private long updatedAt;
@@ -17,6 +19,8 @@ public class Household {
         // Default constructor required for Firestore
         this.residents = new ArrayList<>();
         this.majorAppliances = new ArrayList<>();
+        this.currentMonthWaterUsage = 0.0;
+        this.currentMonthElectricityUsage = 0.0;
     }
 
     public Household(String householdId, int householdSize) {
@@ -26,6 +30,8 @@ public class Household {
         this.majorAppliances = new ArrayList<>();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
+        this.currentMonthWaterUsage = 0.0;
+        this.currentMonthElectricityUsage = 0.0;
     }
 
     // Getters and Setters
@@ -67,6 +73,22 @@ public class Household {
 
     public void setPreviousMonthElectricityUsage(double previousMonthElectricityUsage) {
         this.previousMonthElectricityUsage = previousMonthElectricityUsage;
+    }
+
+    public double getCurrentMonthWaterUsage() {
+        return currentMonthWaterUsage;
+    }
+
+    public void setCurrentMonthWaterUsage(double currentMonthWaterUsage) {
+        this.currentMonthWaterUsage = currentMonthWaterUsage;
+    }
+
+    public double getCurrentMonthElectricityUsage() {
+        return currentMonthElectricityUsage;
+    }
+
+    public void setCurrentMonthElectricityUsage(double currentMonthElectricityUsage) {
+        this.currentMonthElectricityUsage = currentMonthElectricityUsage;
     }
 
     public List<String> getResidents() {

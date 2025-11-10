@@ -63,12 +63,37 @@ public class CheckInActivity extends AppCompatActivity {
             return;
         }
 
+        firebaseHelper.getDb().collection("households")
+            .whereArrayContains("residents", firebaseUser.getUid())
+            .get()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null && !task.getResult().isEmpty()) {
+                    DocumentSnapshot householdDoc = task.getResult().getDocuments().get(0);
+                    double prevWater = householdDoc.getDouble("previousMonthWaterUsage") != null ? householdDoc.getDouble("previousMonthWaterUsage") : 0.0;
+                    double prevElectric = householdDoc.getDouble("previousMonthElectricityUsage") != null ? householdDoc.getDouble("previousMonthElectricityUsage") : 0.0;
+                    double currWater = householdDoc.getDouble("currentMonthWaterUsage") != null ? householdDoc.getDouble("currentMonthWaterUsage") : 0.0;
+                    double currElectric = householdDoc.getDouble("currentMonthElectricityUsage") != null ? householdDoc.getDouble("currentMonthElectricityUsage") : 0.0;
+
+                    runOnUiThread(() -> {
+                        waterLastMonthTextView.setText(String.format("%.2f L", prevWater));
+                        electricityLastMonthTextView.setText(String.format("%.2f kWh", prevElectric));
+                        waterCurrentMonthTextView.setText(String.format("%.2f L", currWater));
+                        electricityCurrentMonthTextView.setText(String.format("%.2f kWh", currElectric));
+                    });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "No household found for this user", Toast.LENGTH_SHORT).show());
+                }
+            });
+
+        // Old user retrieval code commented out since no longer needed
+        /*
         firebaseHelper.getUser(firebaseUser.getUid(), task -> {
             if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()) {
                 currentUser = firebaseHelper.documentToUser(task.getResult());
                 runOnUiThread(() -> updateLastMonthData());
             }
         });
+        */
     }
 
     private void updateLastMonthData() {
@@ -200,11 +225,10 @@ public class CheckInActivity extends AppCompatActivity {
 
         suggestionsTextView.setText(suggestions.toString());
     }
-    
+
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
     }
 }
-

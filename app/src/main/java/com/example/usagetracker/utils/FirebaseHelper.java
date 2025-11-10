@@ -351,4 +351,8 @@ public class FirebaseHelper {
     public FirebaseFirestore getFirestore() {
         return db;
     }
+
+    public FirebaseFirestore getDb() {
+        return db;
+    }
 }

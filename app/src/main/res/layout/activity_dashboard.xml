@@ -18,7 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#F5F5F5"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:titleTextColor="#F5F5F5" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -140,7 +141,9 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="16dp"
-                style="@style/RoundedOutlinedButton" />
+                style="@style/RoundedOutlinedButton"
+                android:backgroundTint="#4CAF50"
+                android:textColor="@android:color/white" />
 
             <!-- Activities Section -->
             <TextView
@@ -209,6 +212,30 @@
         android:src="@android:drawable/ic_input_add"
         app:tint="@android:color/white"
         app:backgroundTint="#4CAF50"
+        app:elevation="8dp"
+        app:pressedTranslationZ="12dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabLeaderboard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginHorizontal="80dp"
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        app:backgroundTint="#4CAF50"
+        app:tint="@android:color/white"
+        app:elevation="8dp"
+        app:pressedTranslationZ="12dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabNotification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginHorizontal="80dp"
+        android:src="@android:drawable/ic_menu_info_details"
+        app:backgroundTint="#4CAF50"
+        app:tint="@android:color/white"
         app:elevation="8dp"
         app:pressedTranslationZ="12dp" />
 
