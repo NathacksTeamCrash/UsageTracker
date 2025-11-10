@@ -187,6 +187,27 @@ public class LogUsageActivity extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(LogUsageActivity.this, "Log saved successfully!", Toast.LENGTH_SHORT).show();
+
+                            // Update ecoPoints for user
+                            double targetLimitVal = activityTargetLimits.get(selectedPosition);
+                            double points;
+                            if (usageAmount <= targetLimitVal) {
+                                points = com.example.usagetracker.models.EcoPointsCalculator.showerPoints(usageAmount, targetLimitVal);
+                            } else {
+                                points = -5.0;
+                            }
+
+                            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(userId)
+                                .update("ecoPoints", com.google.firebase.firestore.FieldValue.increment(points))
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(LogUsageActivity.this, "EcoPoints updated!", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(LogUsageActivity.this, "Failed to update EcoPoints", Toast.LENGTH_SHORT).show();
+                                });
+
                             finish();
                         } else {
                             Toast.makeText(LogUsageActivity.this, "Failed to save log", Toast.LENGTH_SHORT).show();

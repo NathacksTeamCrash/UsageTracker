@@ -66,12 +66,15 @@ public class LogsAdapter extends RecyclerView.Adapter<LogsAdapter.LogViewHolder>
             holder.statusTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_red_dark, null));
         }
 
-        // Show points earned
-        if (log.getEcoPointsEarned() > 0) {
-            holder.pointsTextView.setText("+" + log.getEcoPointsEarned() + " pts");
+        // Show points earned or lost (fallback check)
+        if (log.isMetGoal()) {
+            holder.pointsTextView.setText("+10 pts");
+            holder.pointsTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_green_dark, null));
             holder.pointsTextView.setVisibility(View.VISIBLE);
         } else {
-            holder.pointsTextView.setVisibility(View.GONE);
+            holder.pointsTextView.setText("-5 pts");
+            holder.pointsTextView.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_red_dark, null));
+            holder.pointsTextView.setVisibility(View.VISIBLE);
         }
     }
 
